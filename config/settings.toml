@@ -1,0 +1,4 @@
+[node]
+
+[node.network.metrics]
+port = 4000
