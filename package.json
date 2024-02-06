@@ -1,9 +1,10 @@
 {
-  "name": "everywhere-cli",
+  "name": "every-cli",
   "version": "0.0.1",
   "keywords": [
     "cli",
     "ec",
+    "every-cli",
     "everywhere-cli",
     "everywhere-computer",
     "fission"
@@ -16,7 +17,7 @@
   "author": "Fission Team <support@fission.codes>",
   "license": "MIT",
   "bin": {
-    "everywhere-cli": "./dist/index.js"
+    "every": "./bin/run.js"
   },
   "files": [
     "bin",

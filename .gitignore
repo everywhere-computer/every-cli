@@ -4,5 +4,11 @@ node_modules/
 # dist
 dist/
 
+# block store
+block-store/
+
 # macOS
 .DS_Store
+
+# homestar
+homestar.db

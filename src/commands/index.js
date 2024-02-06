@@ -60,13 +60,11 @@ const everyCommand = async function (options, command) {
   if (command.args.length === 0) {
     const pkg = await getPackageJson()
 
-    const pre = `${chalk.hex('#6A50EB')('ϵ✵')}`
-    const title = `${chalk.hex('#6A50EB')('Everywhere CLI')}`
+    const title = `${chalk.hex('#6A50EB')('ϵ✵ Everywhere CLI')}`
     const docsMsg = `${chalk.hex('#139C6E')('Check out the docs:')} https://docs.everywhere.computer/`
     const supportMsg = `${chalk.hex('#EBC428')('Support and bugs:')} ${pkg.bugs.url}`
 
     console.log()
-    console.log(pre)
     console.log(title)
     console.log(docsMsg)
     console.log(supportMsg)
@@ -125,17 +123,13 @@ export const createEveryCommand = () => {
   createDevCommand(program)
 
   program
-    .version(USER_AGENT, '-V')
+    .version(USER_AGENT, '-v, --version')
+    .alias('create')
     .showSuggestionAfterError(true)
-    // needed for custom version output as we display further environment information
-    // commanders version output is set to uppercase -V
-    .addOption(new Option('-v, --version').hideHelp())
-    .addOption(new Option('--verbose').hideHelp())
-    // .noHelpOptions()
     .configureOutput({
       outputError: (message, write) => {
-        write(` ${chalk.red(BANG)}   Error: ${message.replace(/^error:\s/g, '')}`)
-        write(` ${chalk.red(BANG)}   See more help with --help\n`)
+        write(`${chalk.red(BANG)}   Error: ${message.replace(/^error:\s/g, '')}`)
+        write(`${chalk.red(BANG)}   See more help with --help\n`)
       },
     })
     .action(everyCommand)
