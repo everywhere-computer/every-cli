@@ -1,6 +1,6 @@
 {
   "name": "@everywhere-computer/every-cli",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "keywords": [
     "cli",
     "ec",
@@ -11,7 +11,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/evyerwhere-computer/evyerwhere-cli",
+    "url": "https://github.com/everywhere-computer/everywhere-cli",
     "directory": "./"
   },
   "author": "Fission Team <support@fission.codes>",
@@ -24,7 +24,7 @@
     "dist"
   ],
   "bugs": {
-    "url": "https://github.com/evyerwhere-computer/everywhere-cli/issues"
+    "url": "https://github.com/everywhere-computer/everywhere-cli/issues"
   },
   "type": "module",
   "scripts": {
