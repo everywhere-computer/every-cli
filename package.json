@@ -53,11 +53,16 @@
     "node": ">=12.22.0"
   },
   "dependencies": {
+    "@bytecodealliance/componentize-js": "^0.4.1",
     "@helia/unixfs": "^3.0.0",
+    "@ts-ast-parser/core": "^0.7.0",
     "blockstore-fs": "^1.1.9",
-    "execa": "5.1.1",
+    "body-parser": "^1.20.2",
+    "esbuild": "^0.20.0",
+    "execa": "8.0.1",
     "express": "^4.18.2",
     "fastest-levenshtein": "^1.0.16",
+    "get-tsconfig": "^4.7.2",    
     "helia": "^4.0.1",
     "homestar-runtime": "^0.0.8",
     "inquirer": "^9.2.13",

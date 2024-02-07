@@ -2,11 +2,12 @@ import chalk from 'chalk'
 import { Command, Option } from 'commander'
 import { closest } from 'fastest-levenshtein'
 import envinfo from 'envinfo'
-import execa from 'execa'
+import { execa } from 'execa'
 import inquirer from 'inquirer'
 
-import { BANG, getPackageJson, exit, log, warn, USER_AGENT } from '../utils.js'
+import { BANG, getPackageJson, exit, log, USER_AGENT } from '../utils.js'
 import { createDevCommand } from './dev.js'
+import { createGenerateWasmCommand } from './generate-wasm.js'
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -28,7 +29,7 @@ const getSystemInfo = () =>
   envinfo.run({
     System: ['OS', 'CPU'],
     Binaries: ['Node', 'npm', 'pnpm', 'Yarn'],
-    npmGlobalPackages: ['everywhere-cli'],
+    npmGlobalPackages: ['every-cli'],
   })
 
 const getVersionPage = async () => {
@@ -121,6 +122,7 @@ const everyCommand = async function (options, command) {
 export const createEveryCommand = () => {
   const program = new Command('every')
   createDevCommand(program)
+  createGenerateWasmCommand(program)
 
   program
     .version(USER_AGENT, '-v, --version')

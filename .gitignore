@@ -12,3 +12,6 @@ block-store/
 
 # homestar
 homestar.db
+
+# wasm
+wasm/*.wasm
