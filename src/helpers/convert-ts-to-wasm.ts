@@ -1,15 +1,12 @@
 import { writeFile } from 'node:fs/promises'
 import path from 'path'
-import { parseFromFiles } from '@ts-ast-parser/core'
+import { parseFromFiles, type Type } from '@ts-ast-parser/core'
 import * as esbuild from 'esbuild'
 import { getTsconfig } from 'get-tsconfig'
+// @ts-ignore-next-line
 import { componentize } from '@bytecodealliance/componentize-js'
 
-/**
- * @param {import('@ts-ast-parser/core').Type} type
- * @returns {string}
- */
-function primitiveType(type) {
+function primitiveType(type: Type): string {
   if (type.text === 'string') {
     return 'string'
   }
@@ -36,10 +33,8 @@ function primitiveType(type) {
 /**
  *
  * Generate a WIT file from a TypeScript file
- *
- * @param {string} filePath - Path to a TypeScript file
  */
-async function wit(filePath) {
+async function wit(filePath: string) {
   const cfg = getTsconfig(filePath)
   if (!cfg) {
     throw new Error('No tsconfig found')
@@ -95,10 +90,7 @@ ${exports.join('\n')}
   }
 }
 
-/**
- * @param {string} filePath - Path to a TypeScript file
- */
-async function bundle(filePath) {
+async function bundle(filePath: string): Promise<string> {
   const result = await esbuild.build({
     entryPoints: [filePath],
     bundle: true,
@@ -110,10 +102,9 @@ async function bundle(filePath) {
 }
 
 /**
- * @param {string} filePath - Path to a TypeScript file
- * @param {string} outDir - Path to a directory to write the Wasm component file
+ * Enter the path of a TS file and an optional outDir to place the compile .wasm file in
  */
-export async function build(filePath, outDir = `${process.cwd()}/wasm`) {
+export async function build(filePath: string, outDir = `${process.cwd()}/wasm`): Promise<{ outPath: string }> {
   const outName = path
     .basename(filePath)
     .replace(path.extname(filePath), '.wasm')

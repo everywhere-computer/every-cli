@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import { readFile } from 'fs/promises'
 import WSL from 'is-wsl'
 import os from 'os'
@@ -6,10 +7,13 @@ import process from 'process'
 import { fileURLToPath } from 'url'
 import { format, inspect } from 'util'
 
+// @ts-ignore-next-line
 let packageJson
 export const getPackageJson = async () => {
+  // @ts-ignore-next-line
   if (!packageJson) {
     const packageJsonPath = join(dirname(fileURLToPath(import.meta.url)), '../package.json')
+    // @ts-expect-error
     packageJson = JSON.parse(await readFile(packageJsonPath))
   }
 
@@ -28,7 +32,7 @@ export const exit = (code = 0) => {
   process.exit(code)
 }
 
-export const log = (message = '', ...args) => {
+export const log = (message = '', ...args: string[]) => {
   message = typeof message === 'string' ? message : inspect(message)
   process.stdout.write(`${format(message, ...args)}\n`)
 }

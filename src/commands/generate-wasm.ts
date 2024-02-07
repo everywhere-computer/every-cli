@@ -1,7 +1,8 @@
+import type { Every_Command } from './index.js'
 import { build } from '../helpers/convert-ts-to-wasm.js'
 import persistToIPFS from '../helpers/persist-to-ipfs.js'
 
-export const genWasm = async (options, command) => {
+export const genWasm = async (options: { ipfs: boolean; rust: boolean; typescript: boolean }, command: Every_Command) => {
   // Generate WASM file from TS file
   if (options.typescript) {
     await build(command.args[0])
@@ -18,7 +19,7 @@ export const genWasm = async (options, command) => {
   }
 }
 
-export const createGenerateWasmCommand = (program) => program
+export const createGenerateWasmCommand = (program: Every_Command) => program
   .command('generate-wasm')
   .alias('gen-wasm')
   .description(

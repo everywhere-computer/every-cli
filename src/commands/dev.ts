@@ -1,8 +1,9 @@
 import { execa } from 'execa'
 
+import type { Every_Command } from './index.js'
 import { startGateway } from '../server.js'
 
-export const dev = async (options, command) => {
+export const dev = async (options: { live: boolean | string }, command: Every_Command) => {
   // Start HTTP Gateway
   startGateway()
 
@@ -10,7 +11,7 @@ export const dev = async (options, command) => {
   execa('npm', ['run', 'homestar'], { stdio: 'inherit' })
 }
 
-export const createDevCommand = (program) => program
+export const createDevCommand = (program: Every_Command) => program
   .command('dev')
   .alias('develop')
   .description(

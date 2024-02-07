@@ -2,10 +2,8 @@ import validateProjectName from 'validate-npm-package-name'
 
 /**
  * Validates an npm project name
- * @param {string} name 
- * @returns { valid: boolean, problems?: string[] }
  */
-const validateNpmName = (name) => {
+const validateNpmName = (name: string): { valid: boolean; problems?: string[] } => {
   const nameValidation = validateProjectName(name)
   if (nameValidation.validForNewPackages) {
     return { valid: true }

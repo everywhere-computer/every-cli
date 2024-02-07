@@ -2,8 +2,8 @@
 import { argv } from 'process'
 import updateNotifier from 'update-notifier'
 
-import { createEveryCommand } from '../src/commands/index.js'
-import { exit, getPackageJson } from '../src/utils.js'
+import { createEveryCommand } from '../dist/commands/index.js'
+import { exit, getPackageJson } from '../dist/utils.js'
 
 // 12 hours
 const UPDATE_CHECK_INTERVAL = 432e5

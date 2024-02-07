@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { Command, Option } from 'commander'
+import { Command, type Command as CommandType } from 'commander'
 import { closest } from 'fastest-levenshtein'
 import envinfo from 'envinfo'
 import { execa } from 'execa'
@@ -8,6 +8,9 @@ import inquirer from 'inquirer'
 import { BANG, getPackageJson, exit, log, USER_AGENT } from '../utils.js'
 import { createDevCommand } from './dev.js'
 import { createGenerateWasmCommand } from './generate-wasm.js'
+
+export type Every_Command = CommandType & {
+}
 
 const SUGGESTION_TIMEOUT = 1e4
 
@@ -47,7 +50,7 @@ ${USER_AGENT}
 /**
  * The every CLI command without any command (root action)
  */
-const everyCommand = async function (options, command) {
+const everyCommand = async function (options: { version: number; verbose: boolean }, command: Every_Command) {
   if (command.args[0] === 'version' || options.version) {
     if (options.verbose) {
       const versionPage = await getVersionPage()
@@ -70,22 +73,7 @@ const everyCommand = async function (options, command) {
     console.log(docsMsg)
     console.log(supportMsg)
     console.log()
-
-    command.help()
   }
-
-  // if (command.args[0] === 'help') {
-  //   if (command.args[1]) {
-  //     const subCommand = command.commands.find((cmd) => cmd.name() === command.args[1])
-  //     if (!subCommand) {
-  //       error(`command ${command.args[1]} not found`)
-  //     }
-  //     subCommand.help()
-  //   }
-  //   command.help()
-  // }
-
-  // warn(`${chalk.yellow(command.args[0])} is not a ${command.name()} command.`)
 
   const allCommands = command.commands.map((cmd) => cmd.name())
   const suggestion = closest(command.args[0], allCommands)
@@ -98,9 +86,11 @@ const everyCommand = async function (options, command) {
       default: false,
     })
 
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
+      // @ts-ignore-next-line
       prompt.ui.close()
       resolve(false)
+      clearTimeout(timeout)
     }, SUGGESTION_TIMEOUT)
 
     prompt.then((value) => resolve(value.suggestion))
@@ -120,7 +110,7 @@ const everyCommand = async function (options, command) {
  * Promise is needed as the envinfo is a promise
  */
 export const createEveryCommand = () => {
-  const program = new Command('every')
+  const program: Every_Command = new Command('every')
   createDevCommand(program)
   createGenerateWasmCommand(program)
 

@@ -6,7 +6,7 @@ import { $ } from 'execa'
  * Note: this assumes the user already has an IPFS daemon running
  * @param {string} wasmFileName 
  */
-export default async (wasmFileName) => {
+export default async (wasmFileName: string): Promise<string> => {
   if (!wasmFileName) {
     throw new Error('No WASM file to upload')
   }
