@@ -160,7 +160,7 @@ port = ${opts.ipfsPort}
 
       const workflow1 = await buildWorkflow(args, cid, c.get('name'))
       return c.text(await run(workflow1, hs), 200, {
-        'Content-Type': 'image/svg+xml',
+        'Content-Type': 'application/json',
       })
     }
   )
@@ -173,7 +173,7 @@ port = ${opts.ipfsPort}
     // tunnel: true,
   })
 
-  
+
   await startControlPanel(cid)
 }
 
