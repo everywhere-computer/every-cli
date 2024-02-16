@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+.zshrc
+
+# node
+node_modules/
+
+# dist
+dist/
+
+# block store
+block-store/
+
+# control panel
+control-panel/
+
+# homestar
+homestar.db
+
+# cids
+cids/*.json
+
+# wasm
+wasm/*.wasm
+
+# config
+config/
