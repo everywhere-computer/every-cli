@@ -16,10 +16,11 @@ import { listen } from 'listhen'
 import Ajv from 'ajv'
 import { getRequestListener } from '@hono/node-server'
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 
 import startControlPanel from './lib/control-panel.js'
 
-export const GATEWAY_PORT = 4001
+export const GATEWAY_PORT = 3000
 export const HOMESTAR_PORT = 8020
 
 /**
@@ -110,6 +111,15 @@ port = ${opts.ipfsPort}
 
   /** @type {Hono<{Variables: {name: string, schema: import('ajv').SchemaObject}}>} */
   const app = new Hono()
+
+  app.use(
+    '*',
+    cors({
+      origin: '*',
+      allowHeaders: ['Accept', 'Content-Type'],
+      allowMethods: ['GET'],
+    })
+  )
 
   app.get('/', async (c) => {
     return c.json(entries, 200)
