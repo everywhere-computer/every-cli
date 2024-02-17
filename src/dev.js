@@ -192,6 +192,27 @@ port = ${opts.ipfsPort}
     }
   )
 
+  app.post(
+    '/:id',
+    validator('json', (value, c) => {
+      const ajv = new Ajv()
+      const validate = ajv.compile(c.get('schema'))
+      const valid = validate(value)
+
+      if (!valid) {
+        return c.json(validate.errors, 400)
+      }
+      return value
+    }),
+
+    async (c) => {
+      const workflow1 = await buildWorkflow(Object.values(c.req.json()), cid, c.get('name'))
+      return c.text(await run(workflow1, hs), 200, {
+        'Content-Type': 'application/json',
+      })
+    }
+  )
+
   app.get('*', (c) => c.text('not found')) // fallback
 
   await listen(getRequestListener(app.fetch), {

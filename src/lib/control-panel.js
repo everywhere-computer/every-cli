@@ -76,7 +76,7 @@ const writeEnvFile = async ({
     console.log()
   } catch (err) {
     console.error(err)
-    exit()
+    gracefulExit(1)
   }
 }
 
@@ -217,6 +217,6 @@ export const installControlPanel = async (cid) => {
  */
 export default async (cid) => {
   await installControlPanel(cid)
-  execa('npm', ['run', 'dev'], { stdio: 'inherit' })
+  execa('npm', ['run', 'start'], { stdio: 'inherit' })
   // console.log(chalk.green(`EC Control Panel running on port ${chalk.yellow(5178)}`))
 }
