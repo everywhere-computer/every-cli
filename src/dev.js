@@ -148,6 +148,23 @@ port = ${opts.ipfsPort}
   })
 
   app.get(
+    '/:id/workflow',
+    async (c) => {
+      // order args by schema
+      const keys = Object.keys(c.get('schema').properties)
+      const args = []
+      for (const key of keys) {
+        args.push(c.req.query(key))
+      }
+
+      const workflow1 = await buildWorkflow(args, cid, c.get('name'))
+      return c.json(workflow1, 200, {
+        'Content-Type': 'application/json',
+      })
+    }
+  )
+
+  app.get(
     '/:id',
     validator('query', (value, c) => {
       const ajv = new Ajv()
