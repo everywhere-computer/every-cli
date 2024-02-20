@@ -1,8 +1,8 @@
 {
   "name": "@everywhere-computer/every-cli",
   "type": "module",
-  "version": "0.0.18",
-  "private": true,
+  "version": "0.0.21",
+  "private": false,
   "description": "",
   "author": "Fission Team <support@fission.codes>",
   "license": "Apache-2.0",
@@ -19,6 +19,9 @@
     "everywhere-computer",
     "fission"
   ],
+  "bin": {
+    "every": "./cli.js"
+  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0"
