@@ -225,7 +225,7 @@ port = ${opts.ipfsPort}
 
   app.get('/:id/workflow', async (c) => {
     // order args by schema
-    const keys = Object.keys(c.get('schema').properties)
+    const keys = Object.keys(c.get('schema').properties).slice(0, -1)
     const args = []
     for (const key of keys) {
       args.push(c.req.query(key))
