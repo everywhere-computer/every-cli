@@ -11,7 +11,6 @@ import {
   downloadAndExtractRepo,
   getRepoInfo,
   hasRepo,
-  tryGitInit,
 } from './git.js'
 import installPackages from './install-packages.js'
 import isWriteable from './is-writeable.js'
@@ -22,38 +21,21 @@ export class DownloadError extends Error {}
 const CONTROL_PANEL_REPO_URL =
   'https://github.com/everywhere-computer/control-panel'
 const CONTROL_PANEL_BRANCH = 'avivash/custom-function-ui'
-const DEFAUL_ENV_INFO = {
-  VITE_WORKFLOW_RESOURCE:
-    'ipfs://bafybeig6u35v6t3f4j3zgz2jvj4erd45fbkeolioaddu3lmu6uxm3ilb7a',
-}
 
 /**
  * Overwrite the workflow rsc value in the Control Panel's .env file
  *
  * @param {object} root0
  * @param {string} root0.root
- * @param {string} root0.cid
  */
-const writeEnvFile = async ({ root, cid }) => {
+const writeEnvFile = async ({ root }) => {
   try {
     const envPath = `${root}/.env`
     const originalFile = await fs.promises.readFile(envPath, 'utf8')
 
-    // Replace workflow resource CID
-    const workflowResourceRegex = new RegExp(
-      `VITE_WORKFLOW_RESOURCE="${DEFAUL_ENV_INFO.VITE_WORKFLOW_RESOURCE}"`,
-      'g'
-    )
-    let edits = originalFile.replaceAll(
-      workflowResourceRegex,
-      `VITE_WORKFLOW_RESOURCE="ipfs://${cid}"`
-    )
-
-    await fs.promises.writeFile(envPath, edits, 'utf8')
-
     // Replace gateway endpoint
     const gatewayPortRegex = /VITE_GATEWAY_ENDPOINT="http:\/\/localhost:4337"/g
-    edits = originalFile.replaceAll(
+    let edits = originalFile.replaceAll(
       gatewayPortRegex,
       `VITE_GATEWAY_ENDPOINT="http://localhost:${GATEWAY_PORT}"`
     )
@@ -80,10 +62,8 @@ const writeEnvFile = async ({ root, cid }) => {
 
 /**
  * Kick off the Control Panagel app creation
- *
- * @param {string} cid
  */
-export const installControlPanel = async (cid) => {
+export const installControlPanel = async () => {
   const appPath = `${process.cwd()}/control-panel`
   let repoInfo
   let repoUrl
@@ -135,15 +115,7 @@ export const installControlPanel = async (cid) => {
     gracefulExit(1)
   }
 
-  const appName = path.basename(root)
-
   await makeDir(root)
-
-  const originalDirectory = process.cwd()
-
-  // console.log()
-  // console.log(`Creating a Control Panel in ${chalk.green(root)}.`)
-  // console.log()
 
   process.chdir(root)
 
@@ -155,12 +127,6 @@ export const installControlPanel = async (cid) => {
      * Clone the repo if it exists
      */
     try {
-      // console.log(
-      //   `Downloading files from repo ${chalk.green(
-      //     `${repoUrl}`
-      //   )}. This might take a moment.`
-      // )
-      // console.log()
       const repoInfo2 = repoInfo
       await retry(
         () => downloadAndExtractRepo(root, repoInfo2, CONTROL_PANEL_BRANCH),
@@ -187,47 +153,23 @@ export const installControlPanel = async (cid) => {
     }
 
     // Write .env values
-    if (cid) {
-      await writeEnvFile({ root, cid })
-    }
+    await writeEnvFile({ root })
 
     hasPackageJson = fs.existsSync(packageJsonPath)
     if (hasPackageJson) {
-      // console.log()
-      // console.log('Installing packages. This might take a couple of minutes...')
-      // console.log()
-
       await installPackages(root, null, {
         packageManager: 'npm',
         isOnline: true,
       })
     }
   }
-
-  if (tryGitInit(root)) {
-    // console.log('Initialized a git repository.')
-    // console.log()
-  }
-
-  // const cdpath =
-  //   path.join(originalDirectory, appName) === appPath ? appName : appPath
-
-  // console.log(
-  //   `${chalk.green('Success!')} Created ${chalk.green(
-  //     appName
-  //   )} at ${chalk.green(appPath)}`
-  // )
-
-  // console.log()
 }
 
 /**
  * Start the control panel
- *
- * @param {string} cid
  */
-export async function startControlPanel(cid) {
-  await installControlPanel(cid)
+export async function startControlPanel() {
+  await installControlPanel()
   const hs = execa('npm', ['run', 'start'])
   /** @type {import('p-defer').DeferredPromise<number>} */
   const defer = pDefer()

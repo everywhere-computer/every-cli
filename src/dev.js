@@ -252,13 +252,11 @@ export async function dev(opts) {
   }
   spinner.succeed(`Homestar is running at localhost:8020`)
 
-  // const cid = await addFSFileToIPFS(fn.path, opts.ipfsPort)
-
-  // spinner.start('Starting Control Panel')
-  // const controlPanelPort = await startControlPanel(cid.toString())
-  // spinner.succeed(
-  //   `Control Panel is running at http://localhost:${controlPanelPort}`
-  // )
+  spinner.start('Starting Control Panel')
+  const controlPanelPort = await startControlPanel()
+  spinner.succeed(
+    `Control Panel is running at http://localhost:${controlPanelPort}`
+  )
 
   /** @type {Hono<{Variables: {name: string, schema: import('ajv').SchemaObject, data: import('./types.js').FnData}}>} */
   const app = new Hono()
