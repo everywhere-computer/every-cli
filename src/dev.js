@@ -386,6 +386,24 @@ export async function dev(opts) {
     })
   })
 
+  app.post('/:name/workflow', validator('json', validate), async (c) => {
+    // order args by schema
+    const payload = await c.req.json()
+    const args = []
+    for (const arg of c.get('data').args) {
+      args.push(payload[arg])
+    }
+
+    const workflow1 = await buildWorkflow(
+      args,
+      c.get('data').cid,
+      c.get('name')
+    )
+    return c.json(workflow1, 200, {
+      'Content-Type': 'application/json',
+    })
+  })
+
   app.get('/:name', validator('query', validate), async (c) => {
     const contentType = c.req.query('content-type')
     // order args by schema
