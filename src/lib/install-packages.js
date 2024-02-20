@@ -4,6 +4,12 @@ import spawn from 'cross-spawn'
 /**
  * Spawn a package manager installation with either Yarn or NPM.
  *
+ * @param root
+ * @param dependencies
+ * @param root0
+ * @param root0.packageManager
+ * @param root0.isOnline
+ * @param root0.devDependencies
  * @returns A Promise that resolves once the installation is finished.
  */
 const install = (
@@ -24,10 +30,10 @@ const install = (
    */
   return new Promise((resolve, reject) => {
     let args
-    let command = packageManager
+    const command = packageManager
     const useYarn = packageManager === 'yarn'
 
-    if (dependencies && dependencies.length) {
+    if (dependencies && dependencies.length > 0) {
       /**
        * If there are dependencies, run a variation of `{packageManager} add`.
        */
@@ -45,8 +51,7 @@ const install = (
          * Call `(p)npm install [--save|--save-dev] ...`.
          */
         args = ['install', '--save-exact']
-        args.push(devDependencies ? '--save-dev' : '--save')
-        args.push(...dependencies)
+        args.push(devDependencies ? '--save-dev' : '--save', ...dependencies)
       }
     } else {
       /**
@@ -77,7 +82,7 @@ const install = (
      * Spawn the installation process.
      */
     const child = spawn(command, args, {
-      stdio: 'inherit',
+      // stdio: 'inherit',
       env: {
         ...process.env,
         ADBLOCK: '1',
