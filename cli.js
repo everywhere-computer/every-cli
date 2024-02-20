@@ -31,7 +31,7 @@ const prog = sade('gateway').option('--config', 'config file path', CONFIG_PATH)
 
 prog
   .command('dev')
-  .option('--fn', 'ts file path')
+  .option('--fn', 'WASM or TS file path')
   .option('--ipfsPort', 'ipfs port', 5001)
   .action(async (/** @type {import('./src/types.ts').ConfigDev} */ opts) => {
     try {

@@ -6,7 +6,7 @@ export interface ConfigGlobal {
 }
 
 export interface ConfigDev extends ConfigGlobal {
-  fn: string
+  fn: string | string[] | undefined
   wasm: string
   ipfsPort: number
 }
@@ -21,3 +21,12 @@ export interface FnOut {
   entries: Entries
   path: string
 }
+
+export interface FnData {
+  name: string
+  cid: string
+  schema: JSONSchema7
+  path: string
+  args: string[]
+}
+export type FnsMap = Map<string, FnData>

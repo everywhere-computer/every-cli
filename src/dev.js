@@ -19,6 +19,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 
 import { startControlPanel } from './lib/control-panel.js'
+import { schema } from './lib/schema.js'
 
 export const GATEWAY_PORT = 3000
 export const HOMESTAR_PORT = 8020
@@ -47,16 +48,17 @@ export async function addFSFileToIPFS(path, port) {
 }
 
 /**
- *  @param {import('./types.js').ConfigDev} opts
+ * @param { string } src
+ * @param { string } out
  */
-async function wasmFn(opts) {
+async function wasmFn(src, out) {
   await execa(
     'jco',
     [
       'transpile',
-      opts.wasm,
+      src,
       '-o',
-      opts.config,
+      out,
       '--map',
       'wasi-*=@bytecodealliance/preview2-shim/*',
     ],
@@ -65,11 +67,11 @@ async function wasmFn(opts) {
     }
   )
 
-  const basename = path.basename(opts.wasm).replace('.wasm', '.d.ts')
+  const basename = path.basename(src).replace('.wasm', '.d.ts')
 
   /** @type {import('ts-json-schema-generator').Config} */
   const config = {
-    path: path.join(opts.config, basename),
+    path: path.join(out, basename),
   }
   const schema = createGenerator(config).createSchema(config.type)
 
@@ -86,21 +88,20 @@ async function wasmFn(opts) {
 
   return {
     entries,
-    path: opts.wasm,
+    path: src,
   }
 }
 
 /**
- *  @param {import('./types.js').ConfigDev} opts
+ * @param { string } src
+ * @param { string } out
  */
-async function tsFn(opts) {
-  const fnPath = path.resolve(opts.fn)
-  const wasmPath = await build(fnPath, opts.config)
+async function tsFn(src, out) {
+  const fnPath = path.resolve(src)
+  const wasmPath = await build(fnPath, out)
   /** @type {import('ts-json-schema-generator').Config} */
   const config = {
-    path: path.resolve(opts.fn),
-    // tsconfig: path.join(__dirname, '/tsconfig.json'),
-    // type: '*', // Or <type-name> if you want to generate schema for that one type only
+    path: fnPath,
   }
   const schema = createGenerator(config).createSchema(config.type)
   if (!schema.definitions) {
@@ -124,14 +125,64 @@ async function tsFn(opts) {
  *
  * @param {import('./types.js').ConfigDev} opts
  */
-export async function dev(opts) {
-  const spinner = ora('Processing function.').start()
-  /** @type {import('./types.js').FnOut} */
-  const fn = opts.fn ? await tsFn(opts) : await wasmFn(opts)
+export async function parseFns(opts) {
+  /** @type {string[]} */
+  let fnsPath = []
 
-  spinner.succeed('Function parsed and compiled.')
+  /** @type {import('./types.js').Entries} */
+  const allEntries = []
 
-  spinner.start('Starting Homestar')
+  /** @type {import('./types.js').FnsMap} */
+  const fns = new Map()
+
+  if (typeof opts.fn === 'string') {
+    fnsPath.push(opts.fn)
+  }
+
+  if (Array.isArray(opts.fn)) {
+    fnsPath = opts.fn
+  }
+
+  for (const fnPath of fnsPath) {
+    if (['.ts'].includes(path.extname(fnPath))) {
+      const { entries, path } = await tsFn(fnPath, opts.config)
+      allEntries.push(...entries)
+      const cid = await addFSFileToIPFS(path, opts.ipfsPort)
+      for (const e of entries) {
+        fns.set(e[0], {
+          name: e[0],
+          cid: cid.toString(),
+          schema: e[1],
+          path,
+          args: e[1].properties ? Object.keys(e[1].properties) : [],
+        })
+      }
+    }
+
+    if (['.wasm'].includes(path.extname(fnPath))) {
+      const { entries, path } = await wasmFn(fnPath, opts.config)
+      allEntries.push(...entries)
+      const cid = await addFSFileToIPFS(path, opts.ipfsPort)
+      for (const e of entries) {
+        fns.set(e[0], {
+          name: e[0],
+          cid: cid.toString(),
+          schema: e[1],
+          path,
+          args: e[1].properties ? Object.keys(e[1].properties) : [],
+        })
+      }
+    }
+  }
+
+  return { schema: allEntries, map: fns }
+}
+
+/**
+ *
+ * @param {import('./types.js').ConfigDev} opts
+ */
+async function startHomestar(opts) {
   const config1 = path.join(opts.config, 'workflow.toml')
   const db1 = path.join(opts.config, 'homestar.db')
   await fs.writeFile(
@@ -163,22 +214,53 @@ port = ${opts.ipfsPort}
     transport: new WebsocketTransport('ws://localhost:8020'),
   })
 
+  return hs
+}
+
+/**
+ * @param {any} value
+ * @param {any} c
+ */
+function validate(value, c) {
+  const ajv = new Ajv()
+  const validate = ajv.compile(c.get('schema'))
+  const valid = validate(value)
+
+  if (!valid) {
+    return c.json(validate.errors, 400)
+  }
+  return value
+}
+
+/**
+ *
+ * @param {import('./types.js').ConfigDev} opts
+ */
+export async function dev(opts) {
+  const spinner = ora('Processing functions').start()
+  const fns = await parseFns(opts)
+
+  spinner.succeed('Functions parsed and compiled')
+
+  spinner.start('Starting Homestar')
+  const hs = await startHomestar(opts)
   const health = await hs.health()
+
   if (health.error) {
-    console.error('❌ Homestar is not healthy')
+    console.error('❌ Homestar did not start correctly')
     return gracefulExit(1)
   }
   spinner.succeed(`Homestar is running at localhost:8020`)
 
-  const cid = await addFSFileToIPFS(fn.path, opts.ipfsPort)
+  // const cid = await addFSFileToIPFS(fn.path, opts.ipfsPort)
 
-  spinner.start('Starting Control Panel')
-  const controlPanelPort = await startControlPanel(cid.toString())
-  spinner.succeed(
-    `Control Panel is running at http://localhost:${controlPanelPort}`
-  )
+  // spinner.start('Starting Control Panel')
+  // const controlPanelPort = await startControlPanel(cid.toString())
+  // spinner.succeed(
+  //   `Control Panel is running at http://localhost:${controlPanelPort}`
+  // )
 
-  /** @type {Hono<{Variables: {name: string, schema: import('ajv').SchemaObject}}>} */
+  /** @type {Hono<{Variables: {name: string, schema: import('ajv').SchemaObject, data: import('./types.js').FnData}}>} */
   const app = new Hono()
 
   app.use(
@@ -191,107 +273,159 @@ port = ${opts.ipfsPort}
   )
 
   app.get('/', async (c) => {
-    return c.json(fn.entries, 200)
+    return c.json(fns.schema, 200)
   })
 
-  app.use('/:id/*', async (c, next) => {
-    const data = fn.entries.find((e) => e[0] === c.req.param('id'))
+  app.post(
+    '/run',
+    validator('json', (value, c) => {
+      // const ajv = new Ajv()
+      // const validate = ajv.compile(schema(fns.map))
+      // const valid = validate(value)
+
+      // if (!valid) {
+      //   return c.json(validate.errors, 400)
+      // }
+      return value
+    }),
+    async (c) => {
+      const tasks =
+        /** @type{import('@fission-codes/homestar/types').TemplateInvocation[]} */ (
+          c.req.valid('json').tasks
+        )
+      const invs = tasks.map((task) => {
+        return {
+          ...task,
+          meta: {
+            memory: 4_294_967_296,
+            time: 100_000,
+          },
+          prf: [],
+          run: {
+            ...task.run,
+            op: 'wasm/run',
+            rsc: `ipfs://${fns.map.get(task.run.input.func)?.cid}`,
+            nnc: '',
+          },
+        }
+      })
+
+      try {
+        const wf = await workflow({
+          name: 'test',
+          workflow: {
+            tasks: invs,
+          },
+        })
+
+        /** @type {import('p-defer').DeferredPromise<Uint8Array>} */
+        const prom = pDefer()
+        let count = 0
+        const { error } = await hs.runWorkflow(wf, (data) => {
+          count++
+          if (count === invs.length) {
+            prom.resolve(data.receipt.out[1])
+          }
+        })
+
+        if (error) {
+          return c.json({ error: error.message }, 500)
+        }
+
+        const out = await prom.promise
+
+        return c.body(out, 200, {
+          'Content-Length': `${out.byteLength}`,
+          'Content-Type': 'application/octet-stream',
+        })
+      } catch (error) {
+        // @ts-ignore
+        return c.json({ error: error.message }, 500)
+      }
+    }
+  )
+
+  app.use('/:name/*', async (c, next) => {
+    const data = fns.map.get(c.req.param('name'))
 
     if (!data) {
       return c.json({ error: 'Not found' }, 404)
     }
 
-    const [name, schema] = data
-    if (typeof schema === 'string' || typeof name !== 'string') {
-      return c.json({ error: 'Schema error' }, 404)
-    }
-
-    schema.properties = {
-      ...schema.properties,
+    const _schema = data.schema
+    _schema.properties = {
+      ..._schema.properties,
       'content-type': {
         type: 'string',
         default: 'text/plain',
       },
     }
-    c.set('name', name)
-    c.set('schema', /** @type {import('ajv').SchemaObject} */ (schema))
+    c.set('name', data.name)
+    c.set('schema', /** @type {import('ajv').SchemaObject} */ (_schema))
+    c.set('data', data)
 
     await next()
   })
 
-  app.get('/:id/schema', async (c) => {
-    return c.json(c.get('schema'), 200)
+  app.get('/:name/schema', async (c) => {
+    return c.json(c.get('data').schema, 200)
   })
 
-  app.get('/:id/workflow', async (c) => {
+  app.get('/:name/workflow', validator('query', validate), async (c) => {
     // order args by schema
-    const keys = Object.keys(c.get('schema').properties).slice(0, -1)
     const args = []
-    for (const key of keys) {
-      args.push(c.req.query(key))
+    for (const arg of c.get('data').args) {
+      args.push(c.req.query(arg))
     }
 
-    const workflow1 = await buildWorkflow(args, cid, c.get('name'))
+    const workflow1 = await buildWorkflow(
+      args,
+      c.get('data').cid,
+      c.get('name')
+    )
     return c.json(workflow1, 200, {
       'Content-Type': 'application/json',
     })
   })
 
-  app.get(
-    '/:id',
-    validator('query', (value, c) => {
-      const ajv = new Ajv()
-      const validate = ajv.compile(c.get('schema'))
-      const valid = validate(value)
-
-      if (!valid) {
-        return c.json(validate.errors, 400)
-      }
-      return value
-    }),
-
-    async (c) => {
-      const contentType = c.req.query('content-type')
-      // order args by schema
-      const keys = Object.keys(c.get('schema').properties)
-      const args = []
-      for (const key of keys) {
-        if (key === 'content-type') continue
-        args.push(c.req.query(key))
-      }
-
-      const workflow1 = await buildWorkflow(args, cid, c.get('name'))
-      return c.text(await run(workflow1, hs), 200, {
-        'Content-Type': contentType || 'plain/text',
-      })
+  app.get('/:name', validator('query', validate), async (c) => {
+    const contentType = c.req.query('content-type')
+    // order args by schema
+    const args = []
+    for (const arg of c.get('data').args) {
+      args.push(c.req.query(arg))
     }
-  )
 
-  app.post(
-    '/:id',
-    validator('json', (value, c) => {
-      const ajv = new Ajv()
-      const validate = ajv.compile(c.get('schema'))
-      const valid = validate(value)
+    const workflow1 = await buildWorkflow(
+      args,
+      c.get('data').cid,
+      c.get('name')
+    )
 
-      if (!valid) {
-        return c.json(validate.errors, 400)
-      }
-      return value
-    }),
+    // content-type=image%2Fsvg%2Bxml%0A
+    return c.text(await run(workflow1, hs), 200, {
+      'Content-Type': contentType || 'plain/text',
+    })
+  })
 
-    async (c) => {
-      const contentType = c.req.query('content-type')
-      const workflow1 = await buildWorkflow(
-        Object.values(c.req.json()),
-        cid,
-        c.get('name')
-      )
-      return c.text(await run(workflow1, hs), 200, {
-        'Content-Type': contentType || 'plain/text',
-      })
+  app.post('/:name', validator('json', validate), async (c) => {
+    const contentType = c.req.query('content-type')
+
+    // order args by schema
+    const payload = await c.req.json()
+    const args = []
+    for (const arg of c.get('data').args) {
+      args.push(payload[arg])
     }
-  )
+    const workflow1 = await buildWorkflow(
+      args,
+      c.get('data').cid,
+      c.get('name')
+    )
+    return c.text(await run(workflow1, hs), 200, {
+      'Content-Type': contentType || 'plain/text',
+    })
+  })
 
   app.get('*', (c) => c.text('not found')) // fallback
 
