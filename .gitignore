@@ -1,27 +1,30 @@
-# macOS
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build tools and env
+node_modules
+dist
+*.local
+.env
+config
+
+# Editor directories and files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+.idea
 .DS_Store
-.zshrc
-
-# node
-node_modules/
-
-# dist
-dist/
-
-# block store
-block-store/
-
-# control panel
-control-panel/
-
-# homestar
-homestar.db
-
-# cids
-cids/*.json
-
-# wasm
-wasm/*.wasm
-
-# config
-config/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

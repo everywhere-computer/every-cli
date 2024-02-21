@@ -18,7 +18,7 @@ import { getRequestListener } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 
-import { startControlPanel } from './lib/control-panel.js'
+import { setupControlPanel } from './lib/cp.js'
 import { schema } from './lib/schema.js'
 
 export const GATEWAY_PORT = 3000
@@ -42,7 +42,7 @@ function createInvocations(fns, tasks) {
       run: {
         ...task.run,
         op: 'wasm/run',
-        rsc: `ipfs://${fns.map.get(task.run.input.func)?.cid}`,
+        rsc: `ipfs://${fns.get(task.run.input.func)?.cid}`,
         nnc: '',
       },
     }
@@ -278,7 +278,10 @@ export async function dev(opts) {
   spinner.succeed(`Homestar is running at localhost:8020`)
 
   spinner.start('Starting Control Panel')
-  const controlPanelPort = await startControlPanel()
+  const controlPanelPort = await setupControlPanel(opts, {
+    gateway: GATEWAY_PORT,
+    homestar: HOMESTAR_PORT,
+  })
   spinner.succeed(
     `Control Panel is running at http://localhost:${controlPanelPort}`
   )
@@ -302,13 +305,13 @@ export async function dev(opts) {
   app.post(
     '/run',
     validator('json', (value, c) => {
-      // const ajv = new Ajv()
-      // const validate = ajv.compile(schema(fns.map))
-      // const valid = validate(value)
+      const ajv = new Ajv()
+      const validate = ajv.compile(schema(fns.map))
+      const valid = validate(value)
 
-      // if (!valid) {
-      //   return c.json(validate.errors, 400)
-      // }
+      if (!valid) {
+        return c.json(validate.errors, 400)
+      }
       return value
     }),
     async (c) => {
@@ -316,7 +319,7 @@ export async function dev(opts) {
         /** @type{import('@fission-codes/homestar/types').TemplateInvocation[]} */ (
           c.req.valid('json').tasks
         )
-      const invs = createInvocations(fns, tasks)
+      const invs = createInvocations(fns.map, tasks)
 
       try {
         const wf = await workflow({
@@ -363,7 +366,7 @@ export async function dev(opts) {
         /** @type{import('@fission-codes/homestar/types').TemplateInvocation[]} */ (
           c.req.valid('json').tasks
         )
-      const invs = createInvocations(fns, tasks)
+      const invs = createInvocations(fns.map, tasks)
 
       try {
         const wf = await workflow({
@@ -458,7 +461,6 @@ export async function dev(opts) {
       c.get('name')
     )
 
-    // content-type=image%2Fsvg%2Bxml%0A
     return c.text(await run(workflow1, hs), 200, {
       'Content-Type': contentType || 'plain/text',
     })
@@ -488,7 +490,7 @@ export async function dev(opts) {
   await listen(getRequestListener(app.fetch), {
     public: true,
     port: GATEWAY_PORT,
-    // tunnel: true,
+    tunnel: true,
   })
 }
 

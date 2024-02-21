@@ -37,10 +37,10 @@ prog
     try {
       await fs.mkdir(CONFIG_PATH, { recursive: true })
 
-      if (!opts.fn) {
-        prog.help('dev')
-      } else {
+      if (opts.fn) {
         await dev(opts)
+      } else {
+        prog.help('dev')
       }
     } catch (error) {
       console.error(error)
