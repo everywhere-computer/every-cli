@@ -13,6 +13,7 @@ dist
 *.local
 .env
 config
+control-panel
 
 # Editor directories and files
 .vscode/*
