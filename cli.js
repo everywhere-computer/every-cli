@@ -30,14 +30,18 @@ const CONFIG_PATH = path.join(__dirname, 'config')
 const prog = sade('gateway').option('--config', 'config file path', CONFIG_PATH)
 
 prog
-  .command('dev')
+  .command('dev', '', { default: true })
   .option('--fn', 'WASM or TS file path')
   .option('--ipfsPort', 'ipfs port', 5001)
   .action(async (/** @type {import('./src/types.ts').ConfigDev} */ opts) => {
     try {
       await fs.mkdir(CONFIG_PATH, { recursive: true })
 
-      await dev(opts)
+      if (!opts.fn && !opts.wasm) {
+        prog.help('dev')
+      } else {
+        await dev(opts)
+      }
     } catch (error) {
       console.error(error)
       gracefulExit(1)
