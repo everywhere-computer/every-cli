@@ -25,6 +25,31 @@ export const GATEWAY_PORT = 3000
 export const HOMESTAR_PORT = 8020
 
 /**
+ * Create invocations from tasks
+ *
+ * @param {import('./types.js').FnsMap} fns
+ * @param {import('@fission-codes/homestar/types').TemplateInvocation[]} tasks
+ */
+function createInvocations(fns, tasks) {
+  return tasks.map((task) => {
+    return {
+      ...task,
+      meta: {
+        memory: 4_294_967_296,
+        time: 100_000,
+      },
+      prf: [],
+      run: {
+        ...task.run,
+        op: 'wasm/run',
+        rsc: `ipfs://${fns.map.get(task.run.input.func)?.cid}`,
+        nnc: '',
+      },
+    }
+  })
+}
+
+/**
  * Add file to IPFS
  *
  * @param {string} path - path to file ie. '/small.png'
@@ -291,22 +316,7 @@ export async function dev(opts) {
         /** @type{import('@fission-codes/homestar/types').TemplateInvocation[]} */ (
           c.req.valid('json').tasks
         )
-      const invs = tasks.map((task) => {
-        return {
-          ...task,
-          meta: {
-            memory: 4_294_967_296,
-            time: 100_000,
-          },
-          prf: [],
-          run: {
-            ...task.run,
-            op: 'wasm/run',
-            rsc: `ipfs://${fns.map.get(task.run.input.func)?.cid}`,
-            nnc: '',
-          },
-        }
-      })
+      const invs = createInvocations(fns, tasks)
 
       try {
         const wf = await workflow({
@@ -335,6 +345,36 @@ export async function dev(opts) {
         return c.body(out, 200, {
           'Content-Length': `${out.byteLength}`,
           'Content-Type': 'application/octet-stream',
+        })
+      } catch (error) {
+        // @ts-ignore
+        return c.json({ error: error.message }, 500)
+      }
+    }
+  )
+
+  app.post(
+    '/workflow',
+    validator('json', (value, c) => {
+      return value
+    }),
+    async (c) => {
+      const tasks =
+        /** @type{import('@fission-codes/homestar/types').TemplateInvocation[]} */ (
+          c.req.valid('json').tasks
+        )
+      const invs = createInvocations(fns, tasks)
+
+      try {
+        const wf = await workflow({
+          name: 'test',
+          workflow: {
+            tasks: invs,
+          },
+        })
+
+        return c.json(wf, 200, {
+          'Content-Type': 'application/json',
         })
       } catch (error) {
         // @ts-ignore
