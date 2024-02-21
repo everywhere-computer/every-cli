@@ -37,7 +37,7 @@ prog
     try {
       await fs.mkdir(CONFIG_PATH, { recursive: true })
 
-      if (!opts.fn && !opts.wasm) {
+      if (!opts.fn) {
         prog.help('dev')
       } else {
         await dev(opts)
