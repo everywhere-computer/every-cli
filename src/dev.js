@@ -17,6 +17,7 @@ import Ajv from 'ajv'
 import { getRequestListener } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { fileTypeFromBuffer } from 'file-type'
 
 import { setupControlPanel } from './lib/cp.js'
 import { schema } from './lib/schema.js'
@@ -258,6 +259,53 @@ function validate(value, c) {
 }
 
 /**
+ * @param {any} out
+ * @param {import('hono').Context} c
+ */
+async function inferResponse(out, c) {
+  const type = toString.call(out).slice(8, -1)
+
+  switch (type) {
+    case 'String': {
+      if (out.startsWith('<svg xmlns:svg="http://www.w3.org/2000/svg"')) {
+        return c.body(out, 200, {
+          'Content-Type': 'image/svg+xml',
+        })
+      }
+      return c.body(out, 200, {
+        'Content-Type': 'plain/text',
+      })
+    }
+
+    case 'Number': {
+      return c.body(out, 200, {
+        'Content-Type': 'plain/text',
+      })
+    }
+
+    case 'Array': {
+      return c.body(JSON.stringify(out), 200, {
+        'Content-Type': 'application/json',
+      })
+    }
+
+    case 'Uint8Array': {
+      const mimeType = await fileTypeFromBuffer(out)
+      return c.body(out, 200, {
+        'Content-Length': `${out.byteLength}`,
+        'Content-Type': mimeType?.mime || 'application/octet-stream',
+      })
+    }
+
+    default: {
+      return c.body(out, 200, {
+        'Content-Type': 'application/octet-stream',
+      })
+    }
+  }
+}
+
+/**
  *
  * @param {import('./types.js').ConfigDev} opts
  */
@@ -344,11 +392,7 @@ export async function dev(opts) {
         }
 
         const out = await prom.promise
-
-        return c.body(out, 200, {
-          'Content-Length': `${out.byteLength}`,
-          'Content-Type': 'application/octet-stream',
-        })
+        return inferResponse(out, c)
       } catch (error) {
         // @ts-ignore
         return c.json({ error: error.message }, 500)
@@ -448,7 +492,6 @@ export async function dev(opts) {
   })
 
   app.get('/:name', validator('query', validate), async (c) => {
-    const contentType = c.req.query('content-type')
     // order args by schema
     const args = []
     for (const arg of c.get('data').args) {
@@ -461,14 +504,17 @@ export async function dev(opts) {
       c.get('name')
     )
 
-    return c.text(await run(workflow1, hs), 200, {
-      'Content-Type': contentType || 'plain/text',
-    })
+    try {
+      const out = await run(workflow1, hs)
+
+      return inferResponse(out, c)
+    } catch (error) {
+      // @ts-ignore
+      return c.json({ error: error.message }, 500)
+    }
   })
 
   app.post('/:name', validator('json', validate), async (c) => {
-    const contentType = c.req.query('content-type')
-
     // order args by schema
     const payload = await c.req.json()
     const args = []
@@ -480,9 +526,14 @@ export async function dev(opts) {
       c.get('data').cid,
       c.get('name')
     )
-    return c.text(await run(workflow1, hs), 200, {
-      'Content-Type': contentType || 'plain/text',
-    })
+    try {
+      const out = await run(workflow1, hs)
+
+      return inferResponse(out, c)
+    } catch (error) {
+      // @ts-ignore
+      return c.json({ error: error.message }, 500)
+    }
   })
 
   app.get('*', (c) => c.text('not found')) // fallback

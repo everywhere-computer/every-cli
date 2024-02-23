@@ -12,13 +12,26 @@ export function schema(map) {
     if (!value.schema.properties) continue
     const propsSize = Object.keys(value.schema.properties).length
     const options = Object.values(value.schema.properties)
+    const optionsWithTemplates = options.map((option) => {
+      return {
+        anyOf: [
+          option,
+          {
+            type: 'string',
+            pattern: '^\\{\\{.*\\}\\}$',
+            description: 'Workflow template',
+            examples: ['{{needs.qr.output}}'],
+          },
+        ],
+      }
+    })
     allOf.push({
       if: { properties: { func: { const: key } } },
       then: {
         properties: {
           args: {
             type: 'array',
-            items: options,
+            items: optionsWithTemplates,
             additionalItems: false,
             maxItems: propsSize,
             minItems: propsSize,
