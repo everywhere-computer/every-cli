@@ -227,6 +227,7 @@ host = "127.0.0.1"
 port = ${HOMESTAR_PORT}
 
 [node.network.ipfs]
+host = "127.0.0.1"
 port = ${opts.ipfsPort}
     `
   )
