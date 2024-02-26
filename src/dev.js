@@ -333,7 +333,7 @@ export async function dev(opts) {
     homestar: HOMESTAR_PORT,
   })
   spinner.succeed(
-    `Control Panel is running at http://localhost:${controlPanelPort}`
+    `Control Panel is running at http://127.0.0.1:${controlPanelPort}`
   )
 
   /** @type {Hono<{Variables: {name: string, schema: import('ajv').SchemaObject, data: import('./types.js').FnData}}>} */

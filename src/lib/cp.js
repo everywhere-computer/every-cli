@@ -30,8 +30,8 @@ export async function setupControlPanel(opts, ports) {
   const envPath = path.join(dir, '.env')
   let envContent = await fs.readFile(envPath, 'utf8')
   envContent = envContent.replaceAll(
-    'VITE_GATEWAY_ENDPOINT="http://localhost:3000"',
-    `VITE_GATEWAY_ENDPOINT="http://localhost:${ports.gateway}"`
+    'VITE_GATEWAY_ENDPOINT="http://127.0.0.1:3000"',
+    `VITE_GATEWAY_ENDPOINT="http://127.0.0.1:${ports.gateway}"`
   )
   envContent = envContent.replaceAll(
     'VITE_WEBSOCKET_ENDPOINT="ws://127.0.0.1:8020"',
@@ -46,8 +46,8 @@ export async function setupControlPanel(opts, ports) {
   hs.stdout?.on('data', (data) => {
     const str = data.toString()
 
-    if (str.includes('Local:   http://localhost:')) {
-      const port = str.match(/Local: {3}http:\/\/localhost:(\d+)/)
+    if (str.includes('Local:   http://127.0.0.1:')) {
+      const port = str.match(/Local: {3}http:\/\/127.0.0.1:(\d+)/)
       defer.resolve(Number(port[1]))
     }
   })
