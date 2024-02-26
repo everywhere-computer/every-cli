@@ -59,6 +59,7 @@ function createInvocations(fns, tasks) {
 export async function addFSFileToIPFS(path, port) {
   const ipfs = create({
     port,
+    url: `http://127.0.0.1:${port}/api/v0`,
   })
 
   const file = await ipfs.add(
@@ -222,6 +223,7 @@ port = 4020
 port = 9820
 
 [node.network.webserver]
+host = "127.0.0.1"
 port = ${HOMESTAR_PORT}
 
 [node.network.ipfs]
@@ -237,7 +239,7 @@ port = ${opts.ipfsPort}
   })
 
   const hs = new Homestar({
-    transport: new WebsocketTransport('ws://localhost:8020'),
+    transport: new WebsocketTransport(`ws://127.0.0.1:${HOMESTAR_PORT}`),
   })
 
   return hs
@@ -323,7 +325,7 @@ export async function dev(opts) {
     console.error('❌ Homestar did not start correctly')
     return gracefulExit(1)
   }
-  spinner.succeed(`Homestar is running at localhost:8020`)
+  spinner.succeed(`Homestar is running at 127.0.0.1:8020`)
 
   spinner.start('Starting Control Panel')
   const controlPanelPort = await setupControlPanel(opts, {
