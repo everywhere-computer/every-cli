@@ -541,7 +541,8 @@ export async function dev(opts) {
   app.get('*', (c) => c.text('not found')) // fallback
 
   await listen(getRequestListener(app.fetch), {
-    public: true,
+    hostname: '127.0.0.1',
+    // public: true, // Temporarily disabling to suppress terminal warning with defined hostname. Seems to still work for our purposes
     port: GATEWAY_PORT,
     tunnel: true,
   })
