@@ -40,10 +40,10 @@ export async function setupControlPanel(opts, ports) {
   await fs.writeFile(envPath, envContent)
 
   // start control panel
-  const hs = execa('npm', ['run', 'start'], { cwd: dir })
+  const cp = execa('npm', ['run', 'start'], { cwd: dir })
   /** @type {import('p-defer').DeferredPromise<number>} */
   const defer = pDefer()
-  hs.stdout?.on('data', (data) => {
+  cp.stdout?.on('data', (data) => {
     const str = data.toString()
 
     if (str.includes('Local:   http://127.0.0.1:')) {
