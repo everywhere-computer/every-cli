@@ -543,7 +543,7 @@ export async function dev(opts) {
 
   await listen(getRequestListener(app.fetch), {
     hostname: '127.0.0.1',
-    // public: true, // Temporarily disabling to suppress terminal warning with defined hostname. Seems to still work for our purposes
+    public: true, // This triggers a one line warning in the terminal when using public: true and specifying a `hostname`, but we'll circle back to that after demos
     port: GATEWAY_PORT,
     tunnel: true,
   })
