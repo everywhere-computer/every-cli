@@ -357,6 +357,15 @@ export async function dev(opts) {
   app.post(
     '/run',
     validator('json', (value, c) => {
+      // Bypass schema validation because it breaks if functions are passed with no args
+      const tasks =
+        /** @type{import('@fission-codes/homestar/types').TemplateInvocation[]} */ (
+          value.tasks
+        )
+      if (tasks.every((task) => task.run.input.args.length === 0)) {
+        return value
+      }
+
       const ajv = new Ajv()
       const validate = ajv.compile(schema(fns.map))
       const valid = validate(value)
