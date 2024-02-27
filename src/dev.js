@@ -234,8 +234,9 @@ port = ${opts.ipfsPort}
 
   execa('homestar', ['start', '-c', config1, '--db', db1], {
     preferLocal: true,
+    stdio: 'inherit',
     env: {
-      RUST_LOG: 'none',
+      RUST_LOG: 'off,homestar_wasm=info',
     },
   })
 
