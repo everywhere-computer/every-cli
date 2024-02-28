@@ -81,7 +81,7 @@ export async function addFSFileToIPFS(path, port) {
  */
 async function wasmFn(src, out) {
   await execa(
-    'jco',
+    `${__dirname}/node_modules/.bin/jco`,
     [
       'transpile',
       src,
