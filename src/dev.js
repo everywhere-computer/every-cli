@@ -209,6 +209,27 @@ export async function parseFns(opts) {
 
 /**
  *
+ * @param {import('@fission-codes/homestar/types').Workflow} wf
+ */
+function addNonceToWorkflow(wf) {
+  const tasks =
+    /** @type{import('@fission-codes/homestar/types').TemplateInvocation[]} */ (
+      wf.workflow.tasks
+    )
+
+  wf.workflow.tasks = tasks.map((task) => ({
+    ...task,
+    run: {
+      ...task.run,
+      nnc: crypto.randomBytes(16).toString('base64'),
+    },
+  }))
+
+  return wf
+}
+
+/**
+ *
  * @param {import('./types.js').ConfigDev} opts
  */
 async function startHomestar(opts) {
@@ -398,17 +419,7 @@ export async function dev(opts) {
 
         // If in debug mode, add a nonce to each task
         if (opts.debug) {
-          const tasks =
-            /** @type{import('@fission-codes/homestar/types').TemplateInvocation[]} */ (
-              wf.workflow.tasks
-            )
-          wf.workflow.tasks = tasks.map((task) => ({
-            ...task,
-            run: {
-              ...task.run,
-              nnc: crypto.randomBytes(16).toString('base64'),
-            },
-          }))
+          wf = addNonceToWorkflow(wf)
         }
 
         /** @type {import('p-defer').DeferredPromise<Uint8Array>} */
@@ -447,12 +458,17 @@ export async function dev(opts) {
       const invs = createInvocations(fns.map, tasks)
 
       try {
-        const wf = await workflow({
+        let wf = await workflow({
           name: 'test',
           workflow: {
             tasks: invs,
           },
         })
+
+        // If in debug mode, add a nonce to each task
+        if (opts.debug) {
+          wf = addNonceToWorkflow(wf)
+        }
 
         return c.json(wf, 200, {
           'Content-Type': 'application/json',
