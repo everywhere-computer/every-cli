@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs/promises'
-import degit from 'degit'
+import tiged from 'tiged'
 import { execa } from 'execa'
 import pDefer from 'p-defer'
 
@@ -15,7 +15,7 @@ export async function setupControlPanel(opts, ports) {
     recursive: true,
   })
 
-  await degit('everywhere-computer/control-panel#avivash/custom-function-ui', {
+  await tiged('everywhere-computer/control-panel#avivash/custom-function-ui', {
     // force: true,
     // cache: false,
     // verbose: true,
