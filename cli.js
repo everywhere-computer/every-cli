@@ -22,7 +22,7 @@ process.once('unhandledRejection', (err) => {
   gracefulExit(1)
 })
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+export const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // TODO change to https://github.com/sindresorhus/env-paths
 const CONFIG_PATH = path.join(__dirname, 'config')

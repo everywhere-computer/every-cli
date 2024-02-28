@@ -19,6 +19,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { fileTypeFromBuffer } from 'file-type'
 
+import { __dirname } from '../cli.js'
 import { setupControlPanel } from './lib/cp.js'
 import { schema } from './lib/schema.js'
 
@@ -232,13 +233,17 @@ port = ${opts.ipfsPort}
     `
   )
 
-  execa('homestar', ['start', '-c', config1, '--db', db1], {
-    preferLocal: true,
-    stdio: 'inherit',
-    env: {
-      RUST_LOG: 'off,homestar_wasm=info',
-    },
-  })
+  execa(
+    `${__dirname}/node_modules/.bin/homestar`,
+    ['start', '-c', config1, '--db', db1],
+    {
+      preferLocal: true,
+      stdio: 'inherit',
+      env: {
+        RUST_LOG: 'off,homestar_wasm=info',
+      },
+    }
+  )
 
   const hs = new Homestar({
     transport: new WebsocketTransport(`ws://127.0.0.1:${HOMESTAR_PORT}`),
