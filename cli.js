@@ -34,6 +34,7 @@ prog
   .command('dev', '', { default: true })
   .option('--fn', 'WASM or TS file path')
   .option('--ipfsPort', 'ipfs port', 5001)
+  .option('--debug', 'debug mode', false)
   .action(async (/** @type {import('./src/types.ts').ConfigDev} */ opts) => {
     try {
       await fs.mkdir(CONFIG_PATH, { recursive: true })

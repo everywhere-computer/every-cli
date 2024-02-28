@@ -1,4 +1,5 @@
 import path from 'path'
+import crypto from 'crypto'
 import fs from 'fs/promises'
 import { execa } from 'execa'
 import ora from 'ora'
@@ -388,12 +389,27 @@ export async function dev(opts) {
       const invs = createInvocations(fns.map, tasks)
 
       try {
-        const wf = await workflow({
+        let wf = await workflow({
           name: 'test',
           workflow: {
             tasks: invs,
           },
         })
+
+        // If in debug mode, add a nonce to each task
+        if (opts.debug) {
+          const tasks =
+            /** @type{import('@fission-codes/homestar/types').TemplateInvocation[]} */ (
+              wf.workflow.tasks
+            )
+          wf.workflow.tasks = tasks.map((task) => ({
+            ...task,
+            run: {
+              ...task.run,
+              nnc: crypto.randomBytes(16).toString('base64'),
+            },
+          }))
+        }
 
         /** @type {import('p-defer').DeferredPromise<Uint8Array>} */
         const prom = pDefer()
