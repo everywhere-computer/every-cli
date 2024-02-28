@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
 import { gracefulExit } from 'exit-hook'
 import sade from 'sade'
+import { clean } from './src/clean.js'
 import { dev } from './src/dev.js'
 
 // Handle any uncaught errors
@@ -25,7 +26,7 @@ process.once('unhandledRejection', (err) => {
 export const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // TODO change to https://github.com/sindresorhus/env-paths
-const CONFIG_PATH = path.join(__dirname, 'config')
+export const CONFIG_PATH = path.join(__dirname, 'config')
 
 const prog = sade('gateway').option('--config', 'config file path', CONFIG_PATH)
 
@@ -47,5 +48,14 @@ prog
       gracefulExit(1)
     }
   })
+
+prog.command('clean').action(async () => {
+  try {
+    await clean()
+  } catch (error) {
+    console.error(error)
+    gracefulExit(1)
+  }
+})
 
 prog.parse(process.argv)
