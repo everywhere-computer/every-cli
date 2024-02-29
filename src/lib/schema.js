@@ -85,7 +85,11 @@ export function schema(map) {
           },
           nnc: {
             oneOf: [
-              { type: 'string', description: 'Use empty string for no nonce' },
+              {
+                type: 'string',
+                description: 'Use empty string for no nonce',
+                const: '',
+              },
               {
                 type: 'object',
                 description: 'Base64 encoded binary',
