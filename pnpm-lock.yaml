@@ -20,6 +20,9 @@ dependencies:
   '@hono/node-server':
     specifier: ^1.8.1
     version: 1.8.1
+  '@ipld/dag-json':
+    specifier: ^10.2.0
+    version: 10.2.0
   ajv:
     specifier: ^8.12.0
     version: 8.12.0

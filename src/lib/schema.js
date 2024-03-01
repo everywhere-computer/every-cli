@@ -84,8 +84,29 @@ export function schema(map) {
             description: 'Task name',
           },
           nnc: {
-            type: 'string',
-            description: 'Task nonce',
+            oneOf: [
+              {
+                type: 'string',
+                description: 'Use empty string for no nonce',
+                const: '',
+              },
+              {
+                type: 'object',
+                description: 'Base64 encoded binary',
+                properties: {
+                  '/': {
+                    type: 'object',
+                    properties: {
+                      bytes: {
+                        type: 'string',
+                      },
+                    },
+                  },
+                },
+              },
+            ],
+            description:
+              'A 12-byte or 16-byte nonce encoded as IPLD bytes. Use empty string for no nonce.',
           },
           op: {
             type: 'string',

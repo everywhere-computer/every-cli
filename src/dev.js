@@ -10,6 +10,7 @@ import { Homestar } from '@fission-codes/homestar'
 import { invocation, workflow } from '@fission-codes/homestar/workflow'
 import { WebsocketTransport } from '@fission-codes/channel/transports/ws.js'
 import { build } from '@fission-codes/homestar/wasmify'
+import { encode } from '@ipld/dag-json'
 import { create } from 'kubo-rpc-client'
 import { createGenerator } from 'ts-json-schema-generator'
 
@@ -48,7 +49,11 @@ function createInvocations(fns, tasks, debug) {
         op: 'wasm/run',
         rsc: `ipfs://${fns.get(task.run.input.func)?.cid}`,
         // If in debug mode, add a nonce to each task to prevent replays
-        nnc: debug ? crypto.randomBytes(16).toString('base64') : '',
+        nnc: debug
+          ? {
+              '/': { bytes: encode(crypto.randomBytes(12).toString('base64')) },
+            }
+          : '',
       },
     }
   })
@@ -135,6 +140,7 @@ async function tsFn(src, out) {
     path: fnPath,
   }
   const schema = createGenerator(config).createSchema(config.type)
+
   if (!schema.definitions) {
     throw new Error('No definitions found')
   }
