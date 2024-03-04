@@ -15,14 +15,11 @@ dependencies:
     specifier: ^0.0.2
     version: 0.0.2
   '@fission-codes/homestar':
-    specifier: ^2.0.2
-    version: 2.0.2(typescript@5.3.3)
+    specifier: ^2.0.3
+    version: 2.0.3(typescript@5.3.3)
   '@hono/node-server':
     specifier: ^1.8.1
     version: 1.8.1
-  '@ipld/dag-json':
-    specifier: ^10.2.0
-    version: 10.2.0
   ajv:
     specifier: ^8.12.0
     version: 8.12.0
@@ -207,15 +204,28 @@ packages:
       to-fast-properties: 2.0.0
     dev: true
 
-  /@bytecodealliance/componentize-js@0.7.0:
-    resolution: {integrity: sha512-aNBV0KHBN3u62tEbSQVvLcohh5eY2BEvhscj1w1ZFIuTW9muWnq4XEiYiETqCAp9HsnsWxYuJFF+FoDPg+a0Yw==}
+  /@bytecodealliance/componentize-js@0.7.1:
+    resolution: {integrity: sha512-U7LCzFR7N02YDsjaIwmxUNE9eqGVwORSzNOdz2UNk43kSvku0hHg65jLCvZ3bkVd9vABdfdtyi5sxSkSAr1WQg==}
     dependencies:
-      '@bytecodealliance/jco': 1.0.1
+      '@bytecodealliance/jco': 1.0.2
       '@bytecodealliance/wizer': 3.0.1
     dev: false
 
   /@bytecodealliance/jco@1.0.1:
     resolution: {integrity: sha512-zVuV5+TIBT+KpGNgyVIsiNT7CQD7vT0cy+dyeiehNvJVLHj0C2UhZWamALyqw+4nPCwF015zTQuEE6fFhL/EKw==}
+    hasBin: true
+    dependencies:
+      '@bytecodealliance/preview2-shim': 0.15.1
+      binaryen: 111.0.0
+      chalk-template: 0.4.0
+      commander: 9.5.0
+      mkdirp: 1.0.4
+      ora: 6.3.1
+      terser: 5.27.2
+    dev: false
+
+  /@bytecodealliance/jco@1.0.2:
+    resolution: {integrity: sha512-DAHnX+nW+ppHRkqh7WpTVF8fWD99Ctl8KgJ51rSan2DFu0qJ00hWBHplAokYaW1m81LbjbMom5k24FnvTwKoNA==}
     hasBin: true
     dependencies:
       '@bytecodealliance/preview2-shim': 0.15.1
@@ -607,10 +617,10 @@ packages:
       - supports-color
     dev: true
 
-  /@fission-codes/homestar@2.0.2(typescript@5.3.3):
-    resolution: {integrity: sha512-jT0Z58Y4wcZtsWKe9qUfjtwudEqqCBj+n/Jow3njLLfLHzrsnW9TbWS9HEf6a0hGrw6KmYmyeWuEvrG5H6Xi6Q==}
+  /@fission-codes/homestar@2.0.3(typescript@5.3.3):
+    resolution: {integrity: sha512-tc+GuBJqfGDReWDWMmHs3rtGocmnj3K4szXmovL/yAkSDW0c/nNsYvsiZGBgUIBjofHtCGjyUnkYJuBqy9T+tw==}
     dependencies:
-      '@bytecodealliance/componentize-js': 0.7.0
+      '@bytecodealliance/componentize-js': 0.7.1
       '@fission-codes/channel': 0.0.2
       '@ipld/dag-cbor': 9.2.0
       '@ipld/dag-json': 10.2.0

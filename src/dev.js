@@ -10,7 +10,6 @@ import { Homestar } from '@fission-codes/homestar'
 import { invocation, workflow } from '@fission-codes/homestar/workflow'
 import { WebsocketTransport } from '@fission-codes/channel/transports/ws.js'
 import { build } from '@fission-codes/homestar/wasmify'
-import { encode } from '@ipld/dag-json'
 import { create } from 'kubo-rpc-client'
 import { createGenerator } from 'ts-json-schema-generator'
 
@@ -51,7 +50,7 @@ function createInvocations(fns, tasks, debug) {
         // If in debug mode, add a nonce to each task to prevent replays
         nnc: debug
           ? {
-              '/': { bytes: encode(crypto.randomBytes(12).toString('base64')) },
+              '/': { bytes: crypto.randomBytes(12).toString('base64') },
             }
           : '',
       },
