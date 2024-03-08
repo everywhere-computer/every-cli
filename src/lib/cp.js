@@ -1,5 +1,7 @@
 import path from 'path'
 import fs from 'fs/promises'
+
+// @ts-ignore
 import tiged from 'tiged'
 import { execa } from 'execa'
 import pDefer from 'p-defer'

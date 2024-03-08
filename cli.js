@@ -2,12 +2,19 @@
 
 import path from 'path'
 import { fileURLToPath } from 'url'
-import fs from 'fs/promises'
+import { mkdir } from 'fs/promises'
+import fs from 'fs'
 import { gracefulExit } from 'exit-hook'
 import sade from 'sade'
 
 import { clean } from './src/clean.js'
 import { dev } from './src/dev.js'
+
+export const __dirname = path.dirname(fileURLToPath(import.meta.url))
+// Get the version from package.json
+const { version } = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')
+)
 
 // Handle any uncaught errors
 process.once(
@@ -24,21 +31,20 @@ process.once('unhandledRejection', (err) => {
   gracefulExit(1)
 })
 
-export const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
 // TODO change to https://github.com/sindresorhus/env-paths
 export const CONFIG_PATH = path.join(__dirname, 'config')
 
-const prog = sade('gateway').option('--config', 'config file path', CONFIG_PATH)
+const prog = sade('every').option('--config', 'config file path', CONFIG_PATH)
 
 prog
+  .version(version)
   .command('dev', '', { default: true })
   .option('--fn', 'WASM or TS file path')
   .option('--ipfsPort', 'ipfs port', 5001)
   .option('--debug', 'debug mode', false)
   .action(async (/** @type {import('./src/types.ts').ConfigDev} */ opts) => {
     try {
-      await fs.mkdir(CONFIG_PATH, { recursive: true })
+      await mkdir(CONFIG_PATH, { recursive: true })
 
       if (opts.fn) {
         await dev(opts)
@@ -59,5 +65,4 @@ prog.command('clean').action(async () => {
     gracefulExit(1)
   }
 })
-
 prog.parse(process.argv)

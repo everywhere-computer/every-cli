@@ -1,7 +1,7 @@
 {
   "name": "@everywhere-computer/every-cli",
   "type": "module",
-  "version": "0.0.43",
+  "version": "0.0.45",
   "description": "",
   "author": "Fission Team <support@fission.codes>",
   "license": "Apache-2.0",
@@ -30,19 +30,19 @@
     "check": "depcheck"
   },
   "dependencies": {
-    "@bytecodealliance/jco": "^1.0.1",
+    "@bytecodealliance/jco": "^1.0.3",
     "@bytecodealliance/preview2-shim": "^0.15.1",
     "@fission-codes/channel": "^0.0.2",
-    "@fission-codes/homestar": "^2.0.3",
-    "@hono/node-server": "^1.8.1",
+    "@fission-codes/homestar": "^2.2.1",
+    "@hono/node-server": "^1.8.2",
     "ajv": "^8.12.0",
     "execa": "^8.0.1",
     "exit-hook": "^4.0.0",
     "file-type": "^19.0.0",
     "homestar-runtime": "0.2.0",
-    "hono": "^4.0.5",
-    "kubo-rpc-client": "^3.0.3",
-    "listhen": "^1.6.0",
+    "hono": "^4.0.10",
+    "kubo-rpc-client": "^3.0.4",
+    "listhen": "^1.7.2",
     "ora": "^8.0.1",
     "p-defer": "^4.0.0",
     "sade": "^1.8.1",
@@ -54,11 +54,11 @@
     "@paulmillr/qr": "^0.1.1",
     "@types/degit": "^2.8.6",
     "@types/json-schema": "^7.0.15",
-    "@types/node": "^20.11.17",
+    "@types/node": "^20.11.25",
     "depcheck": "^1.4.7",
     "json-schema": "^0.4.0",
     "prettier": "^3.2.5",
-    "typescript": "^5.3.3"
+    "typescript": "5.3.3"
   },
   "prettier": "@fission-codes/eslint-config/prettier.config.js",
   "eslintConfig": {

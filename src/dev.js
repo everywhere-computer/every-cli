@@ -133,7 +133,9 @@ async function wasmFn(src, out) {
  */
 async function tsFn(src, out) {
   const fnPath = path.resolve(src)
-  const wasmPath = await build(fnPath, out)
+  const wasmPath = await build({
+    entryPoint: fnPath,
+  })
   /** @type {import('ts-json-schema-generator').Config} */
   const config = {
     path: fnPath,
@@ -396,7 +398,7 @@ export async function dev(opts) {
       const invs = createInvocations(fns.map, tasks, opts.debug)
 
       try {
-        let wf = await workflow({
+        const wf = await workflow({
           name: 'test',
           workflow: {
             tasks: invs,
@@ -439,7 +441,7 @@ export async function dev(opts) {
       const invs = createInvocations(fns.map, tasks, opts.debug)
 
       try {
-        let wf = await workflow({
+        const wf = await workflow({
           name: 'test',
           workflow: {
             tasks: invs,
