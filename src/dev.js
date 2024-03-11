@@ -135,6 +135,7 @@ async function tsFn(src, out) {
   const fnPath = path.resolve(src)
   const wasmPath = await build({
     entryPoint: fnPath,
+    outDir: out,
   })
   /** @type {import('ts-json-schema-generator').Config} */
   const config = {
