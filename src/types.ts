@@ -31,3 +31,10 @@ export interface FnData {
   args: string[]
 }
 export type FnsMap = Map<string, FnData>
+
+export type RunResult = {
+  headers: { [key: string]: string }
+  out: string | number | number[]
+  replayed: boolean
+  type: string
+}

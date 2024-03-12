@@ -280,49 +280,88 @@ function validate(value, c) {
 
 /**
  * @param {any} out
- * @param {import('hono').Context} c
  */
-async function inferResponse(out, c) {
+async function inferType({ out, ...rest }) {
   const type = toString.call(out).slice(8, -1)
 
   switch (type) {
     case 'String': {
       if (out.startsWith('<svg xmlns:svg="http://www.w3.org/2000/svg"')) {
-        return c.body(out, 200, {
-          'Content-Type': 'image/svg+xml',
-        })
+        return {
+          out,
+          type,
+          headers: {
+            'Content-Type': 'image/svg+xml',
+          },
+          ...rest,
+        }
       }
-      return c.body(out, 200, {
-        'Content-Type': 'plain/text',
-      })
+      return {
+        out,
+        type,
+        headers: {
+          'Content-Type': 'plain/text',
+        },
+        ...rest,
+      }
     }
 
     case 'Number': {
-      return c.body(out, 200, {
-        'Content-Type': 'plain/text',
-      })
+      return {
+        out,
+        type,
+        headers: {
+          'Content-Type': 'plain/text',
+        },
+        ...rest,
+      }
     }
 
     case 'Array': {
-      return c.body(JSON.stringify(out), 200, {
-        'Content-Type': 'application/json',
-      })
+      return {
+        out: JSON.stringify(out),
+        type,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        ...rest,
+      }
     }
 
     case 'Uint8Array': {
       const mimeType = await fileTypeFromBuffer(out)
-      return c.body(out, 200, {
-        'Content-Length': `${out.byteLength}`,
-        'Content-Type': mimeType?.mime || 'application/octet-stream',
-      })
+      return {
+        out,
+        type,
+        headers: {
+          'Content-Length': `${out.byteLength}`,
+          'Content-Type': mimeType?.mime || 'application/octet-stream',
+        },
+        ...rest,
+      }
     }
 
     default: {
-      return c.body(out, 200, {
-        'Content-Type': 'application/octet-stream',
-      })
+      return {
+        out,
+        type,
+        headers: {
+          'Content-Type': 'application/octet-stream',
+        },
+        ...rest,
+      }
     }
   }
+}
+
+/**
+ * @param {any} out
+ * @param {import('hono').Context} c
+ */
+async function inferResponse(out, c) {
+  const { out: res, headers } = await inferType({ out })
+
+  return c.body(res, 200, headers)
 }
 
 /**
@@ -389,6 +428,7 @@ export async function dev(opts) {
       if (!valid) {
         return c.json(validate.errors, 400)
       }
+
       return value
     }),
     async (c) => {
@@ -399,6 +439,8 @@ export async function dev(opts) {
       const invs = createInvocations(fns.map, tasks, opts.debug)
 
       try {
+        const returnAllResults = c.req.query('allResults')
+
         const wf = await workflow({
           name: 'test',
           workflow: {
@@ -409,10 +451,21 @@ export async function dev(opts) {
         /** @type {import('p-defer').DeferredPromise<Uint8Array>} */
         const prom = pDefer()
         let count = 0
-        const { error } = await hs.runWorkflow(wf, (data) => {
+        const allResults = /** @type { import('./types.js').RunResult[]} */ ([])
+        const { error } = await hs.runWorkflow(wf, async (data) => {
           count++
+
+          if (returnAllResults) {
+            allResults.push({
+              ...(await inferType({
+                out: data.receipt.out[1],
+                replayed: data.metadata.replayed,
+              })),
+            })
+          }
+
           if (count === invs.length) {
-            prom.resolve(data.receipt.out[1])
+            prom.resolve(returnAllResults ? allResults : data.receipt.out[1])
           }
         })
 
@@ -421,6 +474,13 @@ export async function dev(opts) {
         }
 
         const out = await prom.promise
+
+        if (returnAllResults) {
+          return c.json(allResults, 200, {
+            'Content-Type': 'application/json',
+          })
+        }
+
         return inferResponse(out, c)
       } catch (error) {
         // @ts-ignore
