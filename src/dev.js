@@ -1,5 +1,4 @@
 import path from 'path'
-import crypto from 'crypto'
 import fs from 'fs/promises'
 import { execa } from 'execa'
 import ora from 'ora'
@@ -12,7 +11,8 @@ import { WebsocketTransport } from '@fission-codes/channel/transports/ws.js'
 import { build } from '@fission-codes/homestar/wasmify'
 import { create } from 'kubo-rpc-client'
 import { createGenerator } from 'ts-json-schema-generator'
-
+import { base32hex } from 'iso-base/rfc4648'
+import { randomBytes } from 'iso-base/crypto'
 import { listen } from 'listhen'
 import Ajv from 'ajv'
 import { getRequestListener } from '@hono/node-server'
@@ -48,11 +48,7 @@ function createInvocations(fns, tasks, debug) {
         op: 'wasm/run',
         rsc: `ipfs://${fns.get(task.run.input.func)?.cid}`,
         // If in debug mode, add a nonce to each task to prevent replays
-        nnc: debug
-          ? {
-              '/': { bytes: crypto.randomBytes(12).toString('base64') },
-            }
-          : '',
+        nnc: debug ? base32hex.encode(randomBytes(12), false) : '',
       },
     }
   })

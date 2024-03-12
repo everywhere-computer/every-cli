@@ -15,8 +15,8 @@ dependencies:
     specifier: ^0.0.2
     version: 0.0.2
   '@fission-codes/homestar':
-    specifier: ^2.2.1
-    version: 2.2.1(typescript@5.3.3)
+    specifier: ^2.3.0
+    version: 2.3.0(typescript@5.3.3)
   '@hono/node-server':
     specifier: ^1.8.2
     version: 1.8.2
@@ -38,6 +38,9 @@ dependencies:
   hono:
     specifier: ^4.0.10
     version: 4.0.10
+  iso-base:
+    specifier: ^3.0.0
+    version: 3.0.0
   kubo-rpc-client:
     specifier: ^3.0.4
     version: 3.0.4
@@ -74,8 +77,8 @@ devDependencies:
     specifier: ^7.0.15
     version: 7.0.15
   '@types/node':
-    specifier: ^20.11.25
-    version: 20.11.25
+    specifier: ^20.11.26
+    version: 20.11.26
   depcheck:
     specifier: ^1.4.7
     version: 1.4.7
@@ -608,8 +611,8 @@ packages:
     resolution: {integrity: sha512-p816+fiQGNjtMGkliSZ8htcED1h4oyVR1opqbePQdr3qeOPfTq8awIbfDWO3xPg0s1IH3T1TMeg4xDJpkKW4AA==}
     dev: false
 
-  /@fission-codes/homestar@2.2.1(typescript@5.3.3):
-    resolution: {integrity: sha512-NtxNX/JtfOkiZzvVYdpSjmtDbhPzYAw4KdT0ni0VbtDlIenHdhbdHhNn0nnkKgwSqil2Y891PBcFdRAe7yxdKQ==}
+  /@fission-codes/homestar@2.3.0(typescript@5.3.3):
+    resolution: {integrity: sha512-ZOk05PmWEqaZ/LlKUs78vIikLDH3xyPQi+AH5Bq3HrLojjGFIZuIQg8EiMBfnaIJjyhmUH6EQeU98i1nKZOdww==}
     dependencies:
       '@bytecodealliance/componentize-js': 0.7.1
       '@fission-codes/channel': 0.0.2
@@ -623,7 +626,7 @@ packages:
       esbuild: 0.20.1
       esbuild-plugin-replace-regex: 0.0.2
       get-tsconfig: 4.7.3
-      iso-base: 2.0.1
+      iso-base: 3.0.0
       just-kebab-case: 4.2.0
       multiformats: 13.1.0
       object-path: 0.11.8
@@ -1142,14 +1145,14 @@ packages:
   /@types/minimatch@3.0.5:
     resolution: {integrity: sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==}
 
-  /@types/node@18.19.22:
-    resolution: {integrity: sha512-p3pDIfuMg/aXBmhkyanPshdfJuX5c5+bQjYLIikPLXAUycEogij/c50n/C+8XOA5L93cU4ZRXtn+dNQGi0IZqQ==}
+  /@types/node@18.19.23:
+    resolution: {integrity: sha512-wtE3d0OUfNKtZYAqZb8HAWGxxXsImJcPUAgZNw+dWFxO6s5tIwIjyKnY76tsTatsNCLJPkVYwUpq15D38ng9Aw==}
     dependencies:
       undici-types: 5.26.5
     dev: false
 
-  /@types/node@20.11.25:
-    resolution: {integrity: sha512-TBHyJxk2b7HceLVGFcpAUjsa5zIdsPWlR6XHfyGzd0SFu+/NFgQgMAl96MSDZgQDvJAvV6BKsFOrt6zIL09JDw==}
+  /@types/node@20.11.26:
+    resolution: {integrity: sha512-YwOMmyhNnAWijOBQweOJnQPl068Oqd4K3OFbTc6AHJwzweUwwWG3GIFY74OKks2PJUDkQPeddOQES9mLn1CTEQ==}
     dependencies:
       undici-types: 5.26.5
 
@@ -3428,7 +3431,7 @@ packages:
       '@libp2p/interface-peer-info': 1.0.10
       '@libp2p/interface-pubsub': 3.0.7
       '@multiformats/multiaddr': 11.6.1
-      '@types/node': 18.19.22
+      '@types/node': 18.19.23
       interface-datastore: 7.0.4
       ipfs-unixfs: 9.0.1
       multiformats: 11.0.2
@@ -3772,8 +3775,8 @@ packages:
   /isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  /iso-base@2.0.1:
-    resolution: {integrity: sha512-ip0nUW9oZP+LG6mslSgdJPt9NWZOq1qIOKpoUIdm8sq/87VwY8WZXw9ptCkhdJclY+r4feFbZuu9P/OFDqCvkQ==}
+  /iso-base@3.0.0:
+    resolution: {integrity: sha512-6+6r3X0lFZTyjE9a72KMtBcJdM7xRdyJTNBFNNrza+12w1s081lqf/Cz8zCOgl4+wM7Rj7poQX3c/aeJS/wTkQ==}
     dependencies:
       base-x: 4.0.0
       bigint-mod-arith: 3.3.1
@@ -4719,7 +4722,7 @@ packages:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 20.11.25
+      '@types/node': 20.11.26
       long: 5.2.3
     dev: false
 
