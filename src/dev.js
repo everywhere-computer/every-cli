@@ -247,7 +247,9 @@ port = ${opts.ipfsPort}
       preferLocal: true,
       stdio: 'inherit',
       env: {
-        RUST_LOG: 'off,homestar_wasm=info',
+        ...('RUST_LOG' in process.env
+          ? { EVERY_CLI: 'false', RUST_LOG: process.env.RUST_LOG }
+          : { EVERY_CLI: 'true' }),
       },
     }
   )

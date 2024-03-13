@@ -1,7 +1,7 @@
 {
   "name": "@everywhere-computer/every-cli",
   "type": "module",
-  "version": "0.0.47",
+  "version": "0.0.48",
   "description": "",
   "author": "Fission Team <support@fission.codes>",
   "license": "Apache-2.0",
@@ -39,7 +39,7 @@
     "execa": "^8.0.1",
     "exit-hook": "^4.0.0",
     "file-type": "^19.0.0",
-    "homestar-runtime": "0.2.0",
+    "homestar-runtime": "0.3.0",
     "hono": "^4.0.10",
     "iso-base": "^3.0.0",
     "kubo-rpc-client": "^3.0.4",

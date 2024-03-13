@@ -33,8 +33,8 @@ dependencies:
     specifier: ^19.0.0
     version: 19.0.0
   homestar-runtime:
-    specifier: 0.2.0
-    version: 0.2.0
+    specifier: 0.3.0
+    version: 0.3.0
   hono:
     specifier: ^4.0.10
     version: 4.0.10
@@ -3244,53 +3244,53 @@ packages:
       parse-passwd: 1.0.0
     dev: true
 
-  /homestar-darwin-arm64@0.2.0:
-    resolution: {integrity: sha512-It9HUAn/ZBbRVfmiYp4jKnc0ch8VHwZPm6nqIl2smLCeYI8cqJZezDZ3AbN+UZ+0wM/TmyYAIyTSLTRaIKHVZg==}
+  /homestar-darwin-arm64@0.3.0:
+    resolution: {integrity: sha512-6lzy5hA7brMoDkuOzB42OvAA32YcldLcukOGgrygF4inWpgXvaCG05oS0/nHxp4XDTvUM9EodHqY0FZ6qdIrMg==}
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
     dev: false
     optional: true
 
-  /homestar-darwin-x64@0.2.0:
-    resolution: {integrity: sha512-5+SzvS31+j/qGJ0AH8Lxu/wFONnzav3116u6W2nLt52JJhw7uSLbHzghrfpMBp7dmhobgdgmAnriEsp9IV/fxg==}
+  /homestar-darwin-x64@0.3.0:
+    resolution: {integrity: sha512-VmeBypFahtpiaPFNcRpvd9S202xpzmQ7r4nwBWx5I/5YPgtdH/mDMewApTI3MBP7CCo62L4q6r17XhgPmwbhcA==}
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
     dev: false
     optional: true
 
-  /homestar-linux-arm64@0.2.0:
-    resolution: {integrity: sha512-DHn+XaH0VlyQuWY4u6d/qXl4CTXaPG8aCpjOXeb/ww+E8UmLjihr6QT8FMVz/qTr+TgG9TXUqYztDZuwqdV+BA==}
+  /homestar-linux-arm64@0.3.0:
+    resolution: {integrity: sha512-5kqfh2y5jd6l2Dieln2+jauFjstSuJnALHBYVd3QMIRYhWE//dCklyWWbfKezRNzeJVByz8KZcoZHh8NYSZb0w==}
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
     dev: false
     optional: true
 
-  /homestar-linux-x64@0.2.0:
-    resolution: {integrity: sha512-3XaU8nypp0J9pO6/HHlZKAMo76GWbUiQOHn/7pHPilKkjfoYRx4s05Rhq4tzNc0x5X3BNYp2Kig3getql3mJFA==}
+  /homestar-linux-x64@0.3.0:
+    resolution: {integrity: sha512-IvZwQlfyXdUqt6raN5AdorbmMl5nrqwx8tyW93ZmZduTdfI57os2qYdmixiOW06mLrAwPJGEEHTWXEcLj4EiHQ==}
     cpu: [x64]
     os: [linux]
     requiresBuild: true
     dev: false
     optional: true
 
-  /homestar-runtime@0.2.0:
-    resolution: {integrity: sha512-LgPkqH5iUe80fs19JB6OvhbO6N4xeWuMPcSzkTRlw7l0s3nXLt6/Z/Uwqyikm63sseHfcAPiJAtp2vDsOKHPGg==}
+  /homestar-runtime@0.3.0:
+    resolution: {integrity: sha512-BrdfviHiyhKckZi/Erl4kR34ZEBtGGYCKxOUjgGrc+TpAC/1Ri2K1Kcbxg/Me5m9t5IkBOV3rYhN0v89Qp9GyA==}
     hasBin: true
     dependencies:
       execa: 8.0.1
     optionalDependencies:
-      homestar-darwin-arm64: 0.2.0
-      homestar-darwin-x64: 0.2.0
-      homestar-linux-arm64: 0.2.0
-      homestar-linux-x64: 0.2.0
-      homestar-windows-x64: 0.2.0
+      homestar-darwin-arm64: 0.3.0
+      homestar-darwin-x64: 0.3.0
+      homestar-linux-arm64: 0.3.0
+      homestar-linux-x64: 0.3.0
+      homestar-windows-x64: 0.3.0
     dev: false
 
-  /homestar-windows-x64@0.2.0:
-    resolution: {integrity: sha512-MAapENicxGCLR0kFm3GnfIxh4ABiBQv6ZvRVHye4W4Ikia00UXs8IRIfoU1TgcMYgAaLdnQ1PQlc8HM5uuZggw==}
+  /homestar-windows-x64@0.3.0:
+    resolution: {integrity: sha512-e1cYLCv/c1VvTJA6/YY1OeJQXuXGEhBJFq1/9L8C5DPvZ29vvwBzYmBs7zDO+9ZQhMkicGEyQCSqgkIhc2iy5A==}
     cpu: [x64]
     os: [windows]
     requiresBuild: true
