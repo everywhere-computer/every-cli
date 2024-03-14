@@ -19,13 +19,17 @@ import { getRequestListener } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { fileTypeFromBuffer } from 'file-type'
+import TOML from '@iarna/toml'
 
-import { __dirname } from '../cli.js'
+import { CONFIG_PATH, __dirname } from '../cli.js'
 import { setupControlPanel } from './lib/cp.js'
 import { schema } from './lib/schema.js'
+import { deepAssign } from './utils/deepAssign.js'
 
-export const GATEWAY_PORT = 3000
-export const HOMESTAR_PORT = 8020
+const GATEWAY_PORT = 3000
+
+let HOMESTAR_PORT = 8020
+let HOMESTAR_WEBSERVER_HOST = '127.0.0.1'
 
 /**
  * Create invocations from tasks
@@ -180,7 +184,7 @@ export async function parseFns(opts) {
 
   for (const fnPath of fnsPath) {
     if (['.ts'].includes(path.extname(fnPath))) {
-      const { entries, path } = await tsFn(fnPath, opts.config)
+      const { entries, path } = await tsFn(fnPath, CONFIG_PATH)
       allEntries.push(...entries)
       const cid = await addFSFileToIPFS(path, opts.ipfsPort)
       for (const e of entries) {
@@ -195,7 +199,7 @@ export async function parseFns(opts) {
     }
 
     if (['.wasm'].includes(path.extname(fnPath))) {
-      const { entries, path } = await wasmFn(fnPath, opts.config)
+      const { entries, path } = await wasmFn(fnPath, CONFIG_PATH)
       allEntries.push(...entries)
       const cid = await addFSFileToIPFS(path, opts.ipfsPort)
       for (const e of entries) {
@@ -218,11 +222,7 @@ export async function parseFns(opts) {
  * @param {import('./types.js').ConfigDev} opts
  */
 async function startHomestar(opts) {
-  const config1 = path.join(opts.config, 'workflow.toml')
-  const db1 = path.join(opts.config, 'homestar.db')
-  await fs.writeFile(
-    config1,
-    `
+  let homestarToml = `
 [node]
 [node.network.metrics]
 port = 4020
@@ -237,9 +237,30 @@ port = ${HOMESTAR_PORT}
 [node.network.ipfs]
 host = "127.0.0.1"
 port = ${opts.ipfsPort}
-    `
-  )
+      `
+  const parsedHomestarToml = TOML.parse(homestarToml)
 
+  // If a --config file is set, read those values and apply them to the one in the `config` directory
+  if (opts.config) {
+    const userConfigFile = await fs.readFile(opts.config, 'utf-8')
+    const parsedUserToml = TOML.parse(userConfigFile)
+    const merged = deepAssign(parsedHomestarToml, parsedUserToml)
+
+    HOMESTAR_PORT = merged.node.network.webserver.port
+    HOMESTAR_WEBSERVER_HOST = merged.node.network.webserver.host
+
+    homestarToml = TOML.stringify(merged)
+  }
+
+  const config1 = path.join(CONFIG_PATH, 'homestar.toml')
+
+  // Write homestar.toml to config directory
+  await fs.writeFile(config1, homestarToml)
+
+  // Specify path to homestar.db in the config directory
+  const db1 = path.join(CONFIG_PATH, 'homestar.db')
+
+  // Start Homestar
   execa(
     `${__dirname}/node_modules/.bin/homestar`,
     ['start', '-c', config1, '--db', db1],
@@ -254,8 +275,11 @@ port = ${opts.ipfsPort}
     }
   )
 
+  // Init Homestar client
   const hs = new Homestar({
-    transport: new WebsocketTransport(`ws://127.0.0.1:${HOMESTAR_PORT}`),
+    transport: new WebsocketTransport(
+      `ws://${HOMESTAR_WEBSERVER_HOST}:${HOMESTAR_PORT}`
+    ),
   })
 
   return hs
@@ -380,10 +404,12 @@ export async function dev(opts) {
     console.error('❌ Homestar did not start correctly')
     return gracefulExit(1)
   }
-  spinner.succeed(`Homestar is running at 127.0.0.1:8020`)
+  spinner.succeed(
+    `Homestar is running at ${HOMESTAR_WEBSERVER_HOST}:${HOMESTAR_PORT}`
+  )
 
   spinner.start('Starting Control Panel')
-  const controlPanelPort = await setupControlPanel(opts, {
+  const controlPanelPort = await setupControlPanel({
     gateway: GATEWAY_PORT,
     homestar: HOMESTAR_PORT,
   })

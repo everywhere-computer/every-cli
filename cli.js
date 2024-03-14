@@ -34,7 +34,7 @@ process.once('unhandledRejection', (err) => {
 // TODO change to https://github.com/sindresorhus/env-paths
 export const CONFIG_PATH = path.join(__dirname, 'config')
 
-const prog = sade('every').option('--config', 'config file path', CONFIG_PATH)
+const prog = sade('every').option('--config', 'config file path')
 
 prog
   .version(version)

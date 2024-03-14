@@ -6,14 +6,15 @@ import tiged from 'tiged'
 import { execa } from 'execa'
 import pDefer from 'p-defer'
 
+import { CONFIG_PATH } from '../../cli.js'
+
 /**
- * @param {import('../types.ts').ConfigDev} opts
  * @param {{homestar: number, gateway: number}} ports
  */
-export async function setupControlPanel(opts, ports) {
-  const dir = path.join(opts.config, 'control-panel')
+export async function setupControlPanel(ports) {
+  const dir = path.join(CONFIG_PATH, 'control-panel')
   await fs.rm(dir, { recursive: true, force: true })
-  await fs.mkdir(path.join(opts.config, 'control-panel'), {
+  await fs.mkdir(path.join(CONFIG_PATH, 'control-panel'), {
     recursive: true,
   })
 
