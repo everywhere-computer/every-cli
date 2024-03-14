@@ -243,7 +243,18 @@ port = ${opts.ipfsPort}
   // If a --config file is set, read those values and apply them to the one in the `config` directory
   if (opts.config) {
     const userConfigFile = await fs.readFile(opts.config, 'utf-8')
-    const parsedUserToml = TOML.parse(userConfigFile)
+    let parsedUserToml = TOML.parse(userConfigFile)
+
+    // If the user has set a keypair_config, update the path to point to the original file
+    const originalKeypairPath =
+      parsedUserToml?.node?.network?.keypair_config?.existing?.path
+    if (originalKeypairPath) {
+      const userTomlDir = path.dirname(opts.config)
+      parsedUserToml.node.network.keypair_config.existing.path = path.resolve(
+        path.join(userTomlDir, originalKeypairPath)
+      )
+    }
+
     const merged = deepAssign(parsedHomestarToml, parsedUserToml)
 
     HOMESTAR_PORT = merged.node.network.webserver.port

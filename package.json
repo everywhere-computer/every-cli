@@ -1,7 +1,7 @@
 {
   "name": "@everywhere-computer/every-cli",
   "type": "module",
-  "version": "0.0.49",
+  "version": "0.0.50",
   "description": "",
   "author": "Fission Team <support@fission.codes>",
   "license": "Apache-2.0",
