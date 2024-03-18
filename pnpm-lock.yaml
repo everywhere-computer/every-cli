@@ -15,8 +15,8 @@ dependencies:
     specifier: ^0.0.2
     version: 0.0.2
   '@fission-codes/homestar':
-    specifier: ^2.3.0
-    version: 2.3.0(typescript@5.3.3)
+    specifier: ^2.3.1
+    version: 2.3.1(typescript@5.3.3)
   '@hono/node-server':
     specifier: ^1.8.2
     version: 1.8.2
@@ -614,8 +614,8 @@ packages:
     resolution: {integrity: sha512-p816+fiQGNjtMGkliSZ8htcED1h4oyVR1opqbePQdr3qeOPfTq8awIbfDWO3xPg0s1IH3T1TMeg4xDJpkKW4AA==}
     dev: false
 
-  /@fission-codes/homestar@2.3.0(typescript@5.3.3):
-    resolution: {integrity: sha512-ZOk05PmWEqaZ/LlKUs78vIikLDH3xyPQi+AH5Bq3HrLojjGFIZuIQg8EiMBfnaIJjyhmUH6EQeU98i1nKZOdww==}
+  /@fission-codes/homestar@2.3.1(typescript@5.3.3):
+    resolution: {integrity: sha512-UbvwrFmLH2HtGkThRjwJA6GspZG8jD+dJBh4zGvscKYhAzr1164yWNapANZYx9B96O4w+vR1zPbzWhkxrI5N8Q==}
     dependencies:
       '@bytecodealliance/componentize-js': 0.7.1
       '@fission-codes/channel': 0.0.2
@@ -623,13 +623,13 @@ packages:
       '@ipld/dag-cbor': 9.2.0
       '@ipld/dag-json': 10.2.0
       '@multiformats/sha3': 3.0.2
-      '@ts-ast-parser/core': 0.7.0(typescript@5.3.3)
+      '@ts-ast-parser/core': 0.8.0(typescript@5.3.3)
       del: 7.1.0
       emittery: 1.0.3
       esbuild: 0.20.1
       esbuild-plugin-replace-regex: 0.0.2
       get-tsconfig: 4.7.3
-      iso-base: 3.0.0
+      iso-base: 4.0.0
       just-kebab-case: 4.2.0
       multiformats: 13.1.0
       object-path: 0.11.8
@@ -1112,22 +1112,21 @@ packages:
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
     dev: false
 
-  /@ts-ast-parser/comment@0.1.0:
-    resolution: {integrity: sha512-SLN5vUMcu0FwhsW7ngVFhwCI9p5r5MGIRT1nGyVKlrXSXMHGcKnU9oulH5Gz9s6epRQooA2TJmU/4hW9z8zy9A==}
-    engines: {node: ^16.0.0 || ^18.0.0 || ^20.0.0}
+  /@ts-ast-parser/comment@0.2.0:
+    resolution: {integrity: sha512-W/nxZGgoK0HS90Zuy5tg4I2TF6izsW3U8jIHk+M9dEvpBjvVMLOZCmZbaewsOsu8xA11vAiLAD4IMBjLMuUwcQ==}
+    engines: {node: 18.x || 20.x || 21.x}
     dependencies:
       tslib: 2.6.2
     dev: false
 
-  /@ts-ast-parser/core@0.7.0(typescript@5.3.3):
-    resolution: {integrity: sha512-9pB/ATFBsLw3ZZWuVTh7dlDPehbpdSb0s35AGfgPS8BCkMVCxZSi1t37ZK1EReA5L+Mctp4aUFQmAj+0OjqJFA==}
-    engines: {node: ^18.0.0 || ^20.0.0}
+  /@ts-ast-parser/core@0.8.0(typescript@5.3.3):
+    resolution: {integrity: sha512-UN78bQwfayfefhJ5f3Z7GnSTh7/oKC1G/Fp5BIR6NxP8EebEC8DRmtSDIBwO6nnLVJjI69W0R57Fa3/EzgtcvA==}
+    engines: {node: 18.x || 20.x || 21.x}
     peerDependencies:
-      typescript: ^4.6.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x
+      typescript: ^4.6.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x
     dependencies:
-      '@ts-ast-parser/comment': 0.1.0
+      '@ts-ast-parser/comment': 0.2.0
       globby: 14.0.1
-      package-json-type: 1.0.3
       tslib: 2.6.2
       typescript: 5.3.3
     dev: false
@@ -3789,6 +3788,13 @@ packages:
       bigint-mod-arith: 3.3.1
     dev: false
 
+  /iso-base@4.0.0:
+    resolution: {integrity: sha512-Vf+6r7XlP+LQD0HSR0ZBLSj/mwuP+59ElbgMKT+iFSnkBW2RzRohQScgKfPCYbaGZAjEdbi40eYq28E/RAnrVA==}
+    dependencies:
+      base-x: 4.0.0
+      bigint-mod-arith: 3.3.1
+    dev: false
+
   /iso-url@1.2.1:
     resolution: {integrity: sha512-9JPDgCN4B7QPkLtYAAOrEuAWvP9rWvR5offAr0/SeF046wIkglqH3VXgYYP6NcsKslH80UIVgmPqNe3j7tG2ng==}
     engines: {node: '>=12'}
@@ -4567,10 +4573,6 @@ packages:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
     engines: {node: '>=6'}
     dev: true
-
-  /package-json-type@1.0.3:
-    resolution: {integrity: sha512-Bey4gdRuOwDbS8Fj1qA3/pTq5r8pqiI5E3tjSqCdhaLSsyGG364VFzXLTIexN5AaNGe/vgdBzLfoKdr7EVg2KQ==}
-    dev: false
 
   /parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}

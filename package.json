@@ -1,7 +1,7 @@
 {
   "name": "@everywhere-computer/every-cli",
   "type": "module",
-  "version": "0.0.50",
+  "version": "0.0.51",
   "description": "",
   "author": "Fission Team <support@fission.codes>",
   "license": "Apache-2.0",
@@ -33,7 +33,7 @@
     "@bytecodealliance/jco": "^1.0.3",
     "@bytecodealliance/preview2-shim": "^0.16.0",
     "@fission-codes/channel": "^0.0.2",
-    "@fission-codes/homestar": "^2.3.0",
+    "@fission-codes/homestar": "^2.3.1",
     "@hono/node-server": "^1.8.2",
     "@iarna/toml": "^2.2.5",
     "ajv": "^8.12.0",
