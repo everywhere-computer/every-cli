@@ -30,6 +30,7 @@ const GATEWAY_PORT = 3000
 
 let HOMESTAR_PORT = 8020
 let HOMESTAR_WEBSERVER_HOST = '127.0.0.1'
+let IPFS_PORT
 
 /**
  * Create invocations from tasks
@@ -186,7 +187,7 @@ export async function parseFns(opts) {
     if (['.ts'].includes(path.extname(fnPath))) {
       const { entries, path } = await tsFn(fnPath, CONFIG_PATH)
       allEntries.push(...entries)
-      const cid = await addFSFileToIPFS(path, opts.ipfsPort)
+      const cid = await addFSFileToIPFS(path, IPFS_PORT)
       for (const e of entries) {
         fns.set(e[0], {
           name: e[0],
@@ -201,7 +202,7 @@ export async function parseFns(opts) {
     if (['.wasm'].includes(path.extname(fnPath))) {
       const { entries, path } = await wasmFn(fnPath, CONFIG_PATH)
       allEntries.push(...entries)
-      const cid = await addFSFileToIPFS(path, opts.ipfsPort)
+      const cid = await addFSFileToIPFS(path, IPFS_PORT)
       for (const e of entries) {
         fns.set(e[0], {
           name: e[0],
@@ -221,7 +222,8 @@ export async function parseFns(opts) {
  *
  * @param {import('./types.js').ConfigDev} opts
  */
-async function startHomestar(opts) {
+async function getHomestarConfig(opts) {
+  IPFS_PORT = opts.ipfsPort
   let homestarToml = `
 [node]
 [node.network.metrics]
@@ -236,7 +238,7 @@ port = ${HOMESTAR_PORT}
 
 [node.network.ipfs]
 host = "127.0.0.1"
-port = ${opts.ipfsPort}
+port = ${IPFS_PORT}
       `
   const parsedHomestarToml = TOML.parse(homestarToml)
 
@@ -259,10 +261,19 @@ port = ${opts.ipfsPort}
 
     HOMESTAR_PORT = merged.node.network.webserver.port
     HOMESTAR_WEBSERVER_HOST = merged.node.network.webserver.host
+    IPFS_PORT = merged.node.network.ipfs.port
 
     homestarToml = TOML.stringify(merged)
   }
 
+  return homestarToml
+}
+
+/**
+ *
+ * @param {string} homestarToml
+ */
+async function startHomestar(homestarToml) {
   const config1 = path.join(CONFIG_PATH, 'homestar.toml')
 
   // Write homestar.toml to config directory
@@ -403,12 +414,15 @@ async function inferResponse(out, c) {
  */
 export async function dev(opts) {
   const spinner = ora('Processing functions').start()
+
+  const homestarToml = await getHomestarConfig(opts)
+
   const fns = await parseFns(opts)
 
   spinner.succeed('Functions parsed and compiled')
 
   spinner.start('Starting Homestar')
-  const hs = await startHomestar(opts)
+  const hs = await startHomestar(homestarToml)
   const health = await hs.health()
 
   if (health.error) {
