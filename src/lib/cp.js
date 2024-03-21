@@ -18,7 +18,7 @@ export async function setupControlPanel(ports) {
     recursive: true,
   })
 
-  await tiged('everywhere-computer/control-panel#avivash/custom-function-ui', {
+  await tiged('everywhere-computer/control-panel', {
     // force: true,
     // cache: false,
     // verbose: true,

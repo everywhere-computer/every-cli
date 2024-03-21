@@ -46,6 +46,10 @@ prog
     try {
       await mkdir(CONFIG_PATH, { recursive: true })
 
+      if (opts._ && !opts.fn) {
+        opts.fn = opts._
+      }
+
       if (opts.fn) {
         await dev(opts)
       } else {

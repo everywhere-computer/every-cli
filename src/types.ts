@@ -7,6 +7,7 @@ export interface ConfigGlobal {
 
 export interface ConfigDev extends ConfigGlobal {
   debug: boolean
+  _: string | string[] | undefined
   fn: string | string[] | undefined
   wasm: string
   ipfsPort: number
