@@ -1,7 +1,7 @@
 {
   "name": "@everywhere-computer/every-cli",
   "type": "module",
-  "version": "0.0.52",
+  "version": "0.0.53",
   "description": "",
   "author": "Fission Team <support@fission.codes>",
   "license": "Apache-2.0",
@@ -37,6 +37,7 @@
     "@hono/node-server": "^1.8.2",
     "@iarna/toml": "^2.2.5",
     "ajv": "^8.12.0",
+    "chalk": "^5.3.0",
     "execa": "^8.0.1",
     "exit-hook": "^4.0.0",
     "file-type": "^19.0.0",

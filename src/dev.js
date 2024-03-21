@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs/promises'
 import { execa } from 'execa'
+import chalk from 'chalk'
 import ora from 'ora'
 import pDefer from 'p-defer'
 import { gracefulExit } from 'exit-hook'
@@ -430,17 +431,23 @@ export async function dev(opts) {
     return gracefulExit(1)
   }
   spinner.succeed(
-    `Homestar is running at ${HOMESTAR_WEBSERVER_HOST}:${HOMESTAR_PORT}`
+    `Homestar is running at ${chalk.cyan(`http://${HOMESTAR_WEBSERVER_HOST}:${HOMESTAR_PORT}`)}`
   )
 
   spinner.start('Starting Control Panel')
-  const controlPanelPort = await setupControlPanel({
-    gateway: GATEWAY_PORT,
-    homestar: HOMESTAR_PORT,
-  })
-  spinner.succeed(
-    `Control Panel is running at http://127.0.0.1:${controlPanelPort}`
-  )
+  if (opts.config) {
+    const controlPanelPort = await setupControlPanel({
+      gateway: GATEWAY_PORT,
+      homestar: HOMESTAR_PORT,
+    })
+    spinner.succeed(
+      `Control Panel is running at ${chalk.cyan(`http://127.0.0.1:${controlPanelPort}`)}`
+    )
+  } else {
+    spinner.succeed(
+      `Control Panel is running at ${chalk.cyan(`https://control.everywhere.computer`)}`
+    )
+  }
 
   /** @type {Hono<{Variables: {name: string, schema: import('ajv').SchemaObject, data: import('./types.js').FnData}}>} */
   const app = new Hono()
