@@ -20,11 +20,11 @@ npm i -g @everywhere-computer/every-cli
 To start a [Homestar](https://github.com/ipvm-wg/homestar) node, API gateway and [Everywhere Computer control panel](https://github.com/everywhere-computer/control-panel)(control panel support for custom functions is coming soon)
 
 ```shell
-every dev --fn <ABSOLUTE_PATH_TO_FUNCTION_FILE>
+every dev --fn <PATH_TO_FUNCTION_FILE>
 ```
 
 #### To create a multi-function Homestar workflow
 
 ```shell
-every dev --fn <ABSOLUTE_PATH_TO_FUNCTION_FILE> --fn <ABSOLUTE_PATH_TO_OTHER_FUNCTION_FILE>
+every dev --fn <PATH_TO_FUNCTION_FILE> --fn <PATH_TO_OTHER_FUNCTION_FILE>
 ```
