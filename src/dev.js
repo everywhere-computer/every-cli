@@ -225,6 +225,8 @@ export async function parseFns(opts) {
  */
 async function getHomestarConfig(opts) {
   IPFS_PORT = opts.ipfsPort
+
+  let useOfflineVersion = false
   let homestarToml = `
 [node]
 [node.network.metrics]
@@ -258,6 +260,12 @@ port = ${IPFS_PORT}
       )
     }
 
+    // If the user has specified a different Homestar port, load the local control panel
+    useOfflineVersion =
+      parsedUserToml?.node?.network?.webserver?.port &&
+      parsedUserToml.node.network.webserver.port !==
+        parsedHomestarToml.node.network.webserver.port
+
     const merged = deepAssign(parsedHomestarToml, parsedUserToml)
 
     HOMESTAR_PORT = merged.node.network.webserver.port
@@ -267,7 +275,10 @@ port = ${IPFS_PORT}
     homestarToml = TOML.stringify(merged)
   }
 
-  return homestarToml
+  return {
+    homestarToml,
+    useOfflineVersion,
+  }
 }
 
 /**
@@ -416,7 +427,7 @@ async function inferResponse(out, c) {
 export async function dev(opts) {
   const spinner = ora('Processing functions').start()
 
-  const homestarToml = await getHomestarConfig(opts)
+  const { homestarToml, useOfflineVersion } = await getHomestarConfig(opts)
 
   const fns = await parseFns(opts)
 
@@ -435,7 +446,7 @@ export async function dev(opts) {
   )
 
   spinner.start('Starting Control Panel')
-  if (opts.config) {
+  if (useOfflineVersion) {
     const controlPanelPort = await setupControlPanel({
       gateway: GATEWAY_PORT,
       homestar: HOMESTAR_PORT,

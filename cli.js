@@ -46,6 +46,7 @@ prog
     try {
       await mkdir(CONFIG_PATH, { recursive: true })
 
+      // If functions were passed as positional args, map them to the --fn args
       if (opts._ && !opts.fn) {
         opts.fn = opts._
       }
