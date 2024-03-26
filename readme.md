@@ -1,6 +1,6 @@
-# Every CLI
+# EveryCLI
 
-This CLI is a set of utilities for running the [Everywhere Computer](https://docs.everywhere.computer/).
+The EveryCLI is a set of utilities for running the [Everywhere Computer](https://docs.everywhere.computer/).
 
 ## Installation
 
