@@ -66,7 +66,11 @@ function createInvocations(fns, tasks, debug) {
 export async function startIPFS() {
   // Kill any existing IPFS processes so config changes can be applied
   try {
-    await $`killall ipfs -9`
+    if (process.platform === 'win32') {
+      await $`taskkill /IM ipfs.exe /F`
+    } else {
+      await $`killall ipfs -9`
+    }
   } catch {}
 
   // Set IPFS port in IPFS config
