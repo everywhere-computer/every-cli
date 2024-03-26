@@ -27,10 +27,14 @@ import { setupControlPanel } from './lib/cp.js'
 import { schema } from './lib/schema.js'
 import { deepAssign } from './utils/deepAssign.js'
 
+/** @type {number} */
 const GATEWAY_PORT = 3000
 
+/** @type {number} */
 let HOMESTAR_PORT = 8020
+/** @type {string} */
 let HOMESTAR_WEBSERVER_HOST = '127.0.0.1'
+/** @type {number} */
 let IPFS_PORT
 
 /**
