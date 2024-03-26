@@ -1,13 +1,13 @@
 {
   "name": "@everywhere-computer/every-cli",
   "type": "module",
-  "version": "0.0.55",
+  "version": "0.0.56",
   "description": "",
   "author": "Fission Team <support@fission.codes>",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/everywhere-computer/everywhere-cli"
+    "url": "https://github.com/everywhere-computer/every-cli"
   },
   "keywords": [
     "cli",
@@ -44,6 +44,7 @@
     "homestar-runtime": "0.3.0",
     "hono": "^4.0.10",
     "iso-base": "^3.0.0",
+    "kubo": "^0.27.0",
     "kubo-rpc-client": "^3.0.4",
     "listhen": "^1.7.2",
     "ora": "^8.0.1",

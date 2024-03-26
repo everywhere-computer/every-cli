@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs/promises'
-import { execa } from 'execa'
+import { $, execa } from 'execa'
 import chalk from 'chalk'
 import ora from 'ora'
 import pDefer from 'p-defer'
@@ -58,6 +58,37 @@ function createInvocations(fns, tasks, debug) {
       },
     }
   })
+}
+
+/**
+ * Start up the IPFS node
+ */
+export async function startIPFS() {
+  // Kill any existing IPFS processes so config changes can be applied
+  try {
+    await $`killall ipfs -9`
+  } catch {}
+
+  // Set IPFS port in IPFS config
+  const configArgs = [
+    'config',
+    'Addresses.API',
+    `/ip4/127.0.0.1/tcp/${IPFS_PORT}`,
+  ]
+
+  try {
+    // Apply config changes(this will fail if ipfs init has not been run on the machine before)
+    await $`${__dirname}/node_modules/.bin/ipfs ${configArgs}`
+  } catch {
+    // Run ipfs init before applying config changes if necessary
+    await $`${__dirname}/node_modules/.bin/ipfs init`
+
+    // Apply config changes
+    await $`${__dirname}/node_modules/.bin/ipfs ${configArgs}`
+  }
+
+  // Start IPFS daemon
+  execa(`${__dirname}/node_modules/.bin/ipfs`, ['daemon'])
 }
 
 /**
@@ -425,12 +456,17 @@ async function inferResponse(out, c) {
  * @param {import('./types.js').ConfigDev} opts
  */
 export async function dev(opts) {
-  const spinner = ora('Processing functions').start()
+  const spinner = ora('Starting IPFS').start()
 
   const { homestarToml, useOfflineVersion } = await getHomestarConfig(opts)
 
-  const fns = await parseFns(opts)
+  await startIPFS()
+  spinner.succeed(
+    `IPFS is running at ${chalk.cyan(`http://127.0.0.1:${IPFS_PORT}/debug/vars`)}`
+  )
 
+  spinner.start('Processing functions')
+  const fns = await parseFns(opts)
   spinner.succeed('Functions parsed and compiled')
 
   spinner.start('Starting Homestar')
