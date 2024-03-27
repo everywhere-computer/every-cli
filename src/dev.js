@@ -106,21 +106,28 @@ export async function startIPFS() {
  * @param {number} port
  */
 export async function addFSFileToIPFS(filePath, port) {
-  const ipfs = create({
-    port,
-    url: `http://127.0.0.1:${port}/api/v0`,
-  })
+  return new Promise(
+    (resolve) =>
+      setTimeout(async () => {
+        const ipfs = create({
+          port,
+          url: `http://127.0.0.1:${port}/api/v0`,
+        })
 
-  const file = await ipfs.add(
-    {
-      content: await fs.readFile(path.resolve(filePath)),
-    },
-    {
-      cidVersion: 1,
-    }
+        const { cid } = await ipfs.add(
+          {
+            content: await fs.readFile(
+              path.relative(process.cwd(), path.resolve(filePath))
+            ),
+          },
+          {
+            cidVersion: 1,
+          }
+        )
+
+        return resolve(cid)
+      }, 1000) // Adding a timeout here seems to account for the drift created by starting the IPFS process in another directory(even though it returns a pid immediately. Will dig into this further)
   )
-
-  return file.cid
 }
 
 /**
@@ -128,11 +135,12 @@ export async function addFSFileToIPFS(filePath, port) {
  * @param { string } out
  */
 async function wasmFn(src, out) {
+  const srcPath = path.relative(process.cwd(), path.resolve(src))
   await execa(
     `${__dirname}/node_modules/.bin/jco`,
     [
       'transpile',
-      path.resolve(src),
+      srcPath,
       '-o',
       out,
       '--map',
@@ -143,7 +151,7 @@ async function wasmFn(src, out) {
     }
   )
 
-  const basename = path.basename(src).replace('.wasm', '.d.ts')
+  const basename = path.basename(srcPath).replace('.wasm', '.d.ts')
 
   /** @type {import('ts-json-schema-generator').Config} */
   const config = {
@@ -173,7 +181,7 @@ async function wasmFn(src, out) {
  * @param { string } out
  */
 async function tsFn(src, out) {
-  const fnPath = path.resolve(src)
+  const fnPath = path.relative(process.cwd(), path.resolve(src))
   const wasmPath = await build({
     entryPoint: fnPath,
     outDir: out,
@@ -223,7 +231,7 @@ export async function parseFns(opts) {
     fnsPath = opts.fn
   }
 
-  for (const fnPath of fnsPath) {
+  for await (const fnPath of fnsPath) {
     if (['.ts'].includes(path.extname(fnPath))) {
       const { entries, filePath } = await tsFn(fnPath, CONFIG_PATH)
       allEntries.push(...entries)
