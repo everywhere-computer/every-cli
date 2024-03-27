@@ -10,6 +10,8 @@ npm i -g @everywhere-computer/every-cli
 
 ## Usage
 
+Full docs can be viewed [here](https://docs.everywhere.computer/everycli/local-dev/).
+
 ### Prerequisites
 
 Create a custom TS or Wasm function(or clone TS examples repo [here](https://github.com/everywhere-computer/custom-homestar-functions-ts))
