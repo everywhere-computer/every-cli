@@ -102,10 +102,10 @@ export async function startIPFS() {
 /**
  * Add file to IPFS
  *
- * @param {string} path - path to file ie. '/small.png'
+ * @param {string} filePath - path to file ie. '/small.png'
  * @param {number} port
  */
-export async function addFSFileToIPFS(path, port) {
+export async function addFSFileToIPFS(filePath, port) {
   const ipfs = create({
     port,
     url: `http://127.0.0.1:${port}/api/v0`,
@@ -113,7 +113,7 @@ export async function addFSFileToIPFS(path, port) {
 
   const file = await ipfs.add(
     {
-      content: await fs.readFile(path),
+      content: await fs.readFile(path.resolve(filePath)),
     },
     {
       cidVersion: 1,
@@ -132,7 +132,7 @@ async function wasmFn(src, out) {
     `${__dirname}/node_modules/.bin/jco`,
     [
       'transpile',
-      src,
+      path.resolve(src),
       '-o',
       out,
       '--map',
@@ -164,7 +164,7 @@ async function wasmFn(src, out) {
 
   return {
     entries,
-    path: src,
+    filePath: src,
   }
 }
 
@@ -197,7 +197,7 @@ async function tsFn(src, out) {
 
   return {
     entries,
-    path: wasmPath.outPath,
+    filePath: wasmPath.outPath,
   }
 }
 
@@ -225,30 +225,30 @@ export async function parseFns(opts) {
 
   for (const fnPath of fnsPath) {
     if (['.ts'].includes(path.extname(fnPath))) {
-      const { entries, path } = await tsFn(fnPath, CONFIG_PATH)
+      const { entries, filePath } = await tsFn(fnPath, CONFIG_PATH)
       allEntries.push(...entries)
-      const cid = await addFSFileToIPFS(path, IPFS_PORT)
+      const cid = await addFSFileToIPFS(filePath, IPFS_PORT)
       for (const e of entries) {
         fns.set(e[0], {
           name: e[0],
           cid: cid.toString(),
           schema: e[1],
-          path,
+          path: filePath,
           args: e[1].properties ? Object.keys(e[1].properties) : [],
         })
       }
     }
 
     if (['.wasm'].includes(path.extname(fnPath))) {
-      const { entries, path } = await wasmFn(fnPath, CONFIG_PATH)
+      const { entries, filePath } = await wasmFn(fnPath, CONFIG_PATH)
       allEntries.push(...entries)
-      const cid = await addFSFileToIPFS(path, IPFS_PORT)
+      const cid = await addFSFileToIPFS(filePath, IPFS_PORT)
       for (const e of entries) {
         fns.set(e[0], {
           name: e[0],
           cid: cid.toString(),
           schema: e[1],
-          path,
+          path: filePath,
           args: e[1].properties ? Object.keys(e[1].properties) : [],
         })
       }
