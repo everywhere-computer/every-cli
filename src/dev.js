@@ -106,28 +106,48 @@ export async function startIPFS() {
  * @param {number} port
  */
 export async function addFSFileToIPFS(filePath, port) {
-  return new Promise(
-    (resolve) =>
-      setTimeout(async () => {
-        const ipfs = create({
-          port,
-          url: `http://127.0.0.1:${port}/api/v0`,
-        })
+  return new Promise(async (resolve) => {
+    const ipfsUrl = `http://127.0.0.1:${port}/api/v0`
+    const ipfs = create({
+      port,
+      url: ipfsUrl,
+    })
+    /** @type {boolean} */
+    let ipfsConnected = false
+    const pingIpfs = async () => {
+      try {
+        ipfsConnected = !!(
+          await (await fetch(`${ipfsUrl}/id`, { method: 'POST' }))?.json()
+        )?.ID
+      } catch {}
+    }
 
-        const { cid } = await ipfs.add(
-          {
-            content: await fs.readFile(
-              path.relative(process.cwd(), path.resolve(filePath))
-            ),
-          },
-          {
-            cidVersion: 1,
-          }
-        )
+    await pingIpfs()
 
-        return resolve(cid)
-      }, 1000) // Adding a timeout here seems to account for the drift created by starting the IPFS process in another directory(even though it returns a pid immediately. Will dig into this further)
-  )
+    // Poll until IPFS is connected
+    if (!ipfsConnected) {
+      const interval = setInterval(async () => {
+        await pingIpfs()
+
+        if (ipfsConnected) {
+          const { cid } = await ipfs.add(
+            {
+              content: await fs.readFile(
+                path.relative(process.cwd(), path.resolve(filePath))
+              ),
+            },
+            {
+              cidVersion: 1,
+            }
+          )
+
+          clearInterval(interval)
+
+          return resolve(cid)
+        }
+      }, 100)
+    }
+  })
 }
 
 /**
