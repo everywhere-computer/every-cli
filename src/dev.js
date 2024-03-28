@@ -16,7 +16,6 @@ import Ajv from 'ajv'
 import { getRequestListener } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { fileTypeFromBuffer } from 'file-type'
 import TOML from '@iarna/toml'
 
 import { CONFIG_PATH, __dirname } from '../cli.js'
@@ -25,6 +24,7 @@ import { schema } from './lib/schema.js'
 import { deepAssign } from './utils/deepAssign.js'
 import { startIPFS } from './lib/ipfs.js'
 import { parseFns } from './lib/fn.js'
+import { inferResponse, inferType } from './lib/response.js'
 
 /** @type {number} */
 const GATEWAY_PORT = 3000
@@ -181,92 +181,6 @@ function validate(value, c) {
     return c.json(validate.errors, 400)
   }
   return value
-}
-
-/**
- * @param {any} out
- */
-async function inferType({ out, ...rest }) {
-  const type = toString.call(out).slice(8, -1)
-
-  switch (type) {
-    case 'String': {
-      if (out.startsWith('<svg xmlns:svg="http://www.w3.org/2000/svg"')) {
-        return {
-          out,
-          type,
-          headers: {
-            'Content-Type': 'image/svg+xml',
-          },
-          ...rest,
-        }
-      }
-      return {
-        out,
-        type,
-        headers: {
-          'Content-Type': 'plain/text',
-        },
-        ...rest,
-      }
-    }
-
-    case 'Number': {
-      return {
-        out,
-        type,
-        headers: {
-          'Content-Type': 'plain/text',
-        },
-        ...rest,
-      }
-    }
-
-    case 'Array': {
-      return {
-        out: JSON.stringify(out),
-        type,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        ...rest,
-      }
-    }
-
-    case 'Uint8Array': {
-      const mimeType = await fileTypeFromBuffer(out)
-      return {
-        out,
-        type,
-        headers: {
-          'Content-Length': `${out.byteLength}`,
-          'Content-Type': mimeType?.mime || 'application/octet-stream',
-        },
-        ...rest,
-      }
-    }
-
-    default: {
-      return {
-        out,
-        type,
-        headers: {
-          'Content-Type': 'application/octet-stream',
-        },
-        ...rest,
-      }
-    }
-  }
-}
-
-/**
- * @param {any} out
- * @param {import('hono').Context} c
- */
-async function inferResponse(out, c) {
-  const { out: res, headers } = await inferType({ out })
-
-  return c.body(res, 200, headers)
 }
 
 /**
