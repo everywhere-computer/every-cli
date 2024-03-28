@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs/promises'
-import { $, execa } from 'execa'
+import { execa } from 'execa'
 import chalk from 'chalk'
 import ora from 'ora'
 import pDefer from 'p-defer'
@@ -9,9 +9,6 @@ import { validator } from 'hono/validator'
 import { Homestar } from '@fission-codes/homestar'
 import { invocation, workflow } from '@fission-codes/homestar/workflow'
 import { WebsocketTransport } from '@fission-codes/channel/transports/ws.js'
-import { build } from '@fission-codes/homestar/wasmify'
-import { create } from 'kubo-rpc-client'
-import { createGenerator } from 'ts-json-schema-generator'
 import { base32hex } from 'iso-base/rfc4648'
 import { randomBytes } from 'iso-base/crypto'
 import { listen } from 'listhen'
@@ -26,6 +23,8 @@ import { CONFIG_PATH, __dirname } from '../cli.js'
 import { setupControlPanel } from './lib/cp.js'
 import { schema } from './lib/schema.js'
 import { deepAssign } from './utils/deepAssign.js'
+import { startIPFS } from './lib/ipfs.js'
+import { parseFns } from './lib/fn.js'
 
 /** @type {number} */
 const GATEWAY_PORT = 3000
@@ -65,228 +64,6 @@ function createInvocations(fns, tasks, debug) {
 }
 
 /**
- * Start up the IPFS node
- */
-export async function startIPFS() {
-  // Kill any existing IPFS processes so config changes can be applied
-  try {
-    if (process.platform === 'win32') {
-      await $`taskkill /IM ipfs.exe /F`
-    } else {
-      await $`killall ipfs -9`
-    }
-  } catch {}
-
-  // Set IPFS port in IPFS config
-  const configArgs = [
-    'config',
-    'Addresses.API',
-    `/ip4/127.0.0.1/tcp/${IPFS_PORT}`,
-  ]
-
-  try {
-    // Apply config changes(this will fail if ipfs init has not been run on the machine before)
-    await $`${__dirname}/node_modules/.bin/ipfs ${configArgs}`
-  } catch {
-    // Run ipfs init before applying config changes if necessary
-    await $`${__dirname}/node_modules/.bin/ipfs init`
-
-    // Apply config changes
-    await $`${__dirname}/node_modules/.bin/ipfs ${configArgs}`
-  }
-
-  // Start IPFS daemon
-  execa(`${__dirname}/node_modules/.bin/ipfs`, ['daemon'])
-}
-
-/**
- * Add file to IPFS
- *
- * @param {string} filePath - path to file ie. '/small.png'
- * @param {number} port
- */
-export async function addFSFileToIPFS(filePath, port) {
-  return new Promise(async (resolve) => {
-    const ipfsUrl = `http://127.0.0.1:${port}/api/v0`
-    const ipfs = create({
-      port,
-      url: ipfsUrl,
-    })
-    /** @type {boolean} */
-    let ipfsConnected = false
-    const pingIpfs = async () => {
-      try {
-        ipfsConnected = !!(
-          await (await fetch(`${ipfsUrl}/id`, { method: 'POST' }))?.json()
-        )?.ID
-      } catch {}
-    }
-
-    await pingIpfs()
-
-    // Poll until IPFS is connected
-    if (!ipfsConnected) {
-      const interval = setInterval(async () => {
-        await pingIpfs()
-
-        if (ipfsConnected) {
-          const { cid } = await ipfs.add(
-            {
-              content: await fs.readFile(
-                path.relative(process.cwd(), path.resolve(filePath))
-              ),
-            },
-            {
-              cidVersion: 1,
-            }
-          )
-
-          clearInterval(interval)
-
-          return resolve(cid)
-        }
-      }, 100)
-    }
-  })
-}
-
-/**
- * @param { string } src
- * @param { string } out
- */
-async function wasmFn(src, out) {
-  const srcPath = path.relative(process.cwd(), path.resolve(src))
-  await execa(
-    `${__dirname}/node_modules/.bin/jco`,
-    [
-      'transpile',
-      srcPath,
-      '-o',
-      out,
-      '--map',
-      'wasi-*=@bytecodealliance/preview2-shim/*',
-    ],
-    {
-      preferLocal: true,
-    }
-  )
-
-  const basename = path.basename(srcPath).replace('.wasm', '.d.ts')
-
-  /** @type {import('ts-json-schema-generator').Config} */
-  const config = {
-    path: path.join(out, basename),
-  }
-  const schema = createGenerator(config).createSchema(config.type)
-
-  if (!schema.definitions) {
-    throw new Error('No definitions found')
-  }
-
-  const entries = /** @type { import('./types.js').Entries} */ (
-    Object.entries(schema.definitions).map(([k, v]) => [
-      k.replaceAll('NamedParameters<typeof ', '').replaceAll('>', ''),
-      v,
-    ])
-  )
-
-  return {
-    entries,
-    filePath: src,
-  }
-}
-
-/**
- * @param { string } src
- * @param { string } out
- */
-async function tsFn(src, out) {
-  const fnPath = path.relative(process.cwd(), path.resolve(src))
-  const wasmPath = await build({
-    entryPoint: fnPath,
-    outDir: out,
-  })
-  /** @type {import('ts-json-schema-generator').Config} */
-  const config = {
-    path: fnPath,
-  }
-  const schema = createGenerator(config).createSchema(config.type)
-
-  if (!schema.definitions) {
-    throw new Error('No definitions found')
-  }
-
-  const entries = /** @type { import('./types.js').Entries} */ (
-    Object.entries(schema.definitions).map(([k, v]) => [
-      k.replaceAll('NamedParameters<typeof ', '').replaceAll('>', ''),
-      v,
-    ])
-  )
-
-  return {
-    entries,
-    filePath: wasmPath.outPath,
-  }
-}
-
-/**
- *
- * @param {import('./types.js').ConfigDev} opts
- */
-export async function parseFns(opts) {
-  /** @type {string[]} */
-  let fnsPath = []
-
-  /** @type {import('./types.js').Entries} */
-  const allEntries = []
-
-  /** @type {import('./types.js').FnsMap} */
-  const fns = new Map()
-
-  if (typeof opts.fn === 'string') {
-    fnsPath.push(opts.fn)
-  }
-
-  if (Array.isArray(opts.fn)) {
-    fnsPath = opts.fn
-  }
-
-  for await (const fnPath of fnsPath) {
-    if (['.ts'].includes(path.extname(fnPath))) {
-      const { entries, filePath } = await tsFn(fnPath, CONFIG_PATH)
-      allEntries.push(...entries)
-      const cid = await addFSFileToIPFS(filePath, IPFS_PORT)
-      for (const e of entries) {
-        fns.set(e[0], {
-          name: e[0],
-          cid: cid.toString(),
-          schema: e[1],
-          path: filePath,
-          args: e[1].properties ? Object.keys(e[1].properties) : [],
-        })
-      }
-    }
-
-    if (['.wasm'].includes(path.extname(fnPath))) {
-      const { entries, filePath } = await wasmFn(fnPath, CONFIG_PATH)
-      allEntries.push(...entries)
-      const cid = await addFSFileToIPFS(filePath, IPFS_PORT)
-      for (const e of entries) {
-        fns.set(e[0], {
-          name: e[0],
-          cid: cid.toString(),
-          schema: e[1],
-          path: filePath,
-          args: e[1].properties ? Object.keys(e[1].properties) : [],
-        })
-      }
-    }
-  }
-
-  return { schema: allEntries, map: fns }
-}
-
-/**
  *
  * @param {import('./types.js').ConfigDev} opts
  */
@@ -319,9 +96,11 @@ port = ${IPFS_PORT}
 
     // If the user has set a keypair_config, update the path to point to the original file
     const originalKeypairPath =
+      // @ts-ignore
       parsedUserToml?.node?.network?.keypair_config?.existing?.path
     if (originalKeypairPath) {
       const userTomlDir = path.dirname(opts.config)
+      // @ts-ignore
       parsedUserToml.node.network.keypair_config.existing.path = path.resolve(
         path.join(userTomlDir, originalKeypairPath)
       )
@@ -329,8 +108,11 @@ port = ${IPFS_PORT}
 
     // If the user has specified a different Homestar port, load the local control panel
     useOfflineVersion =
+      // @ts-ignore
       parsedUserToml?.node?.network?.webserver?.port &&
+      // @ts-ignore
       parsedUserToml.node.network.webserver.port !==
+        // @ts-ignore
         parsedHomestarToml.node.network.webserver.port
 
     const merged = deepAssign(parsedHomestarToml, parsedUserToml)
@@ -496,13 +278,13 @@ export async function dev(opts) {
 
   const { homestarToml, useOfflineVersion } = await getHomestarConfig(opts)
 
-  await startIPFS()
+  await startIPFS(IPFS_PORT)
   spinner.succeed(
     `IPFS is running at ${chalk.cyan(`http://127.0.0.1:${IPFS_PORT}/debug/vars`)}`
   )
 
   spinner.start('Processing functions')
-  const fns = await parseFns(opts)
+  const fns = await parseFns(opts, IPFS_PORT)
   spinner.succeed('Functions parsed and compiled')
 
   spinner.start('Starting Homestar')
