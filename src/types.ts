@@ -33,6 +33,11 @@ export interface FnData {
 }
 export type FnsMap = Map<string, FnData>
 
+export interface Fns {
+  schema: Entries
+  map: FnsMap
+}
+
 export type RunResult = {
   headers: { [key: string]: string }
   out: string | number | number[]
